@@ -11,7 +11,8 @@
     "build:android": "npm run build && npx cap sync android",
     "open:android": "npx cap open android",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync": "git add . && git commit -m \"Auto-sync\" && git push origin main"
   },
   "devDependencies": {
     "@capacitor-community/file-opener": "^8.0.1",
