@@ -99,29 +99,30 @@ export const AuthProvider = ({ children }) => {
 
                 // Define global normalization function inside the AuthStateChanged so it has context
                 const normalizeFirebaseProfile = (latestData, prevData = {}) => {
-                    const mergedData = { ...prevData, ...latestData };
-                    
-                    const rawClass = mergedData.currentClass || mergedData.classSection || mergedData.classRoom || mergedData.class || '';
-                    const rawRoom = mergedData.room || mergedData.roomNumber || '';
-                    const rawBranch = mergedData.branch || mergedData.department || mergedData.branchName || '';
-                    const rawName = mergedData.fullName || mergedData.name || firebaseUser.displayName || '';
+                    // Firebase is the STRICT single source of truth.
+                    // Prioritize fields from latestData over anything lingering in the local prevData cache.
+                    const rawClass = latestData.currentClass || latestData.classSection || latestData.classRoom || latestData.class || prevData.currentClass || '';
+                    const rawRoom = latestData.room || latestData.roomNumber || prevData.room || '';
+                    const rawBranch = latestData.branch || latestData.department || latestData.branchName || prevData.branch || '';
+                    const rawName = latestData.fullName || latestData.name || prevData.fullName || firebaseUser.displayName || '';
                     
                     const cleanName = rawName === 'Loading...' ? '' : rawName;
                     const fallbackName = cleanName || (firebaseUser.email ? firebaseUser.email.split('@')[0].toUpperCase() : 'Student');
 
                     return {
-                        ...mergedData,
+                        ...prevData,
+                        ...latestData,
                         uid: firebaseUser.uid,
                         email: firebaseUser.email,
-                        avatar: mergedData.avatar || firebaseUser.photoURL || generateInitialsAvatar(fallbackName),
+                        avatar: latestData.avatar || prevData.avatar || firebaseUser.photoURL || generateInitialsAvatar(fallbackName),
                         fullName: fallbackName,
                         currentClass: rawClass,
                         room: rawRoom,
                         branch: rawBranch,
                         department: rawBranch, // Sync department and branch
-                        role: mergedData.role || 'student',
-                        bio: mergedData.bio || 'HI I AM USING RGUKT CONNECT APP',
-                        rcId: mergedData.rcId || '',
+                        role: latestData.role || prevData.role || 'student',
+                        bio: latestData.bio || prevData.bio || 'HI I AM USING RGUKT CONNECT APP',
+                        rcId: latestData.rcId || prevData.rcId || '',
                         loadingProfile: false
                     };
                 };
