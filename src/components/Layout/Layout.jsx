@@ -90,6 +90,7 @@ const Layout = () => {
                             <button 
                                 data-route="/profile"
                                 className="appbar-profile-btn"
+                                onClick={() => setIsProfileSheetOpen(true)}
                             >
                                 {user?.avatar ? (
                                     <img src={user.avatar} alt="Profile" className="appbar-avatar" />

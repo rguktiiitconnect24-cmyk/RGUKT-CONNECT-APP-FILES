@@ -64,15 +64,20 @@ public class FileDownloadPlugin extends Plugin {
             }
 
             if (fileUri != null) {
-                // TRIGGER AUTOMATIC OPEN
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setDataAndType(fileUri, "application/pdf");
-                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-                
-                // Use Intent Chooser for better UX
-                Intent chooser = Intent.createChooser(intent, "Open Profile PDF");
-                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getContext().startActivity(chooser);
+                try {
+                    // TRIGGER AUTOMATIC OPEN
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(fileUri, "application/pdf");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    
+                    // Use Intent Chooser for better UX
+                    Intent chooser = Intent.createChooser(intent, "Open Profile PDF");
+                    chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(chooser);
+                } catch (Exception intentException) {
+                    intentException.printStackTrace();
+                    // Do not fail the plugin call, the file is still saved!
+                }
 
                 JSObject ret = new JSObject();
                 ret.put("success", true);

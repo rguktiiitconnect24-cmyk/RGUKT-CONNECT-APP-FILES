@@ -1,6 +1,6 @@
 import { X, GraduationCap, Shield, Calendar, Phone, MapPin, RefreshCw, Download, Share2 } from 'lucide-react';
 import QRCode from 'react-qr-code';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
@@ -21,8 +21,23 @@ const StudentIDCard = ({ user, formData, previewUrl, onClose }) => {
     const email = formData?.email || user?.email || '—';
     const phone = formData?.phone ? `+91 ${formData.phone}` : (user?.phone ? `+91 ${user.phone}` : '—');
     const campus = (formData?.campus || user?.campus || 'RGUKT').replace('RGUKT ', '');
-    const year = formData?.academicYear || user?.academicYear || '2023 – 2027';
-    const avatar = previewUrl || user?.avatar || null;
+    let fallbackYear = '2024 - 2030';
+    const yearMatch = studentId.match(/^[a-zA-Z](\d{2})/);
+    if (yearMatch) {
+        const admissionYear = 2000 + parseInt(yearMatch[1], 10);
+        fallbackYear = `${admissionYear} - ${admissionYear + 6}`;
+    }
+    const year = formData?.academicYear || user?.academicYear || fallbackYear;
+    // Stable reference to the avatar URL to prevent repeated browser fetches
+    const [stableAvatar, setStableAvatar] = useState(previewUrl || user?.avatar || null);
+
+    // Only update the stable avatar if the actual underlying URL changes significantly
+    useEffect(() => {
+        const newAvatar = previewUrl || user?.avatar || null;
+        if (newAvatar !== stableAvatar) {
+            setStableAvatar(newAvatar);
+        }
+    }, [previewUrl, user?.avatar]);
 
     const captureCard = async () => {
         if (!cardRef.current) return null;
@@ -133,8 +148,8 @@ const StudentIDCard = ({ user, formData, previewUrl, onClose }) => {
                             <div className="glass-card-body landscape-body">
                                 <div className="glass-avatar-container landscape-avatar">
                                     <div className="glass-avatar-ring">
-                                        {avatar ? (
-                                            <img src={avatar} alt="Student" className="glass-avatar-img" crossOrigin="anonymous" />
+                                        {stableAvatar ? (
+                                            <img src={stableAvatar} alt="Student" className="glass-avatar-img" crossOrigin="anonymous" loading="lazy" />
                                         ) : (
                                             <div className="glass-avatar-placeholder">
                                                 {studentName.split(' ').map(n => n[0]).slice(0, 2).join('')}

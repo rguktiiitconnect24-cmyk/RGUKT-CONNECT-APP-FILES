@@ -35,17 +35,7 @@ const complaintsConfig = {
 };
 
 const complaintsApp = getApps().find(a => a.name === "complaints") || initializeApp(complaintsConfig, "complaints");
-let complaintsDb;
-try {
-    const tabManager = Capacitor.isNativePlatform() 
-        ? persistentSingleTabManager() 
-        : persistentMultipleTabManager();
-    complaintsDb = initializeFirestore(complaintsApp, {
-        localCache: persistentLocalCache({ tabManager })
-    });
-} catch (error) {
-    complaintsDb = getFirestore(complaintsApp);
-}
+const complaintsDb = getFirestore(complaintsApp);
 
 // Content App (Dedicated Project for PDFs, Semesters, Units)
 const contentConfig = {
@@ -59,17 +49,7 @@ const contentConfig = {
 };
 
 const contentApp = getApps().find(a => a.name === "content") || initializeApp(contentConfig, "content");
-let contentDb;
-try {
-    const tabManager = Capacitor.isNativePlatform() 
-        ? persistentSingleTabManager() 
-        : persistentMultipleTabManager();
-    contentDb = initializeFirestore(contentApp, {
-        localCache: persistentLocalCache({ tabManager })
-    });
-} catch (error) {
-    contentDb = getFirestore(contentApp);
-}
+const contentDb = getFirestore(contentApp);
 const contentStorage = getStorage(contentApp);
 
 // Bulk Upload App (Dedicated Project for Attendance and Exam Seating)
@@ -84,17 +64,7 @@ const bulkUploadConfig = {
 };
 
 const bulkUploadApp = getApps().find(a => a.name === "bulkUpload") || initializeApp(bulkUploadConfig, "bulkUpload");
-let bulkUploadDb;
-try {
-    const tabManager = Capacitor.isNativePlatform() 
-        ? persistentSingleTabManager() 
-        : persistentMultipleTabManager();
-    bulkUploadDb = initializeFirestore(bulkUploadApp, {
-        localCache: persistentLocalCache({ tabManager })
-    });
-} catch (error) {
-    bulkUploadDb = getFirestore(bulkUploadApp);
-}
+const bulkUploadDb = getFirestore(bulkUploadApp);
 
 // Books App (Dedicated Project for Book Orders)
 const booksConfig = {
@@ -108,28 +78,20 @@ const booksConfig = {
 };
 
 const booksApp = getApps().find(a => a.name === "books") || initializeApp(booksConfig, "books");
-let booksDb;
-try {
-    const tabManager = Capacitor.isNativePlatform() 
-        ? persistentSingleTabManager() 
-        : persistentMultipleTabManager();
-    booksDb = initializeFirestore(booksApp, {
-        localCache: persistentLocalCache({ tabManager })
-    });
-} catch (error) {
-    booksDb = getFirestore(booksApp);
-}
+const booksDb = getFirestore(booksApp);
 
 // Initialize Firestore safely for HMR
 let db;
 try {
-    const tabManager = Capacitor.isNativePlatform() 
-        ? persistentSingleTabManager() 
-        : persistentMultipleTabManager();
-
-    db = initializeFirestore(app, {
-        localCache: persistentLocalCache({ tabManager })
-    });
+    if (Capacitor.isNativePlatform()) {
+        // Disable persistent cache on Native to fix Android lock issues
+        db = getFirestore(app);
+    } else {
+        const tabManager = persistentMultipleTabManager();
+        db = initializeFirestore(app, {
+            localCache: persistentLocalCache({ tabManager })
+        });
+    }
 } catch (error) {
     db = getFirestore(app);
 }

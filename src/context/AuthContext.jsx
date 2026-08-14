@@ -46,16 +46,8 @@ const deriveBranch = (cls, id) => {
     if (classStr.includes('CHE') || classStr.includes('CHEM')) return 'Chemical Engineering';
     if (classStr.includes('EEE') || classStr.includes('EE-')) return 'Electrical and Electronics Engineering';
     
-    // Fallback based on ID prefix if class is unknown
-    if (id) {
-        const yearMatch = id.match(/^[A-Z](\d{2})/i);
-        if (yearMatch) {
-            const year = parseInt(yearMatch[1], 10);
-            const currentYear = new Date().getFullYear() % 100;
-            // E.g. in 2024, R24 and R23 are PUC. In 2026, R26 and R25 are PUC.
-            if (year >= currentYear - 2) return 'PUC';
-        }
-    }
+    // We no longer guess 'PUC' based on the ID year, because R24 means B.Tech Year 1.
+    // Let the user manually enter their class to determine the branch accurately.
     return '';
 };
 
@@ -105,21 +97,36 @@ export const AuthProvider = ({ children }) => {
                     }
                 } catch (e) { console.error("Error reading cached user", e); }
 
-                // IMMEDIATE AUTH: Set initial user object so app can render immediately
-                const initialUser = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    fullName: firebaseUser.displayName || 'Loading...',
-                    avatar: firebaseUser.photoURL || generateInitialsAvatar(firebaseUser.displayName || 'User'),
-                    role: firebaseUser.email === 'admin@rguktconnect.ac.in' ? 'admin' : 'student', // Heuristic for immediate role
-                    ...cachedUser,
-                    loadingProfile: cachedUser ? false : true // Use cache to skip loading screen
-                };
-                
-                setUser(initialUser);
-                setLoading(false); // RELEASE THE APP IMMEDIATELY
+                // Define global normalization function inside the AuthStateChanged so it has context
+                const normalizeFirebaseProfile = (latestData, prevData = {}) => {
+                    const mergedData = { ...prevData, ...latestData };
+                    
+                    const rawClass = mergedData.currentClass || mergedData.classSection || mergedData.classRoom || mergedData.class || '';
+                    const rawRoom = mergedData.room || mergedData.roomNumber || '';
+                    const rawBranch = mergedData.branch || mergedData.department || mergedData.branchName || '';
+                    const rawName = mergedData.fullName || mergedData.name || firebaseUser.displayName || '';
+                    
+                    const cleanName = rawName === 'Loading...' ? '' : rawName;
+                    const fallbackName = cleanName || (firebaseUser.email ? firebaseUser.email.split('@')[0].toUpperCase() : 'Student');
 
-                // PROGRESSIVE LOADING: Fetch full profile in the background
+                    return {
+                        ...mergedData,
+                        uid: firebaseUser.uid,
+                        email: firebaseUser.email,
+                        avatar: mergedData.avatar || firebaseUser.photoURL || generateInitialsAvatar(fallbackName),
+                        fullName: fallbackName,
+                        currentClass: rawClass,
+                        room: rawRoom,
+                        branch: rawBranch,
+                        department: rawBranch, // Sync department and branch
+                        role: mergedData.role || 'student',
+                        bio: mergedData.bio || 'HI I AM USING RGUKT CONNECT APP',
+                        rcId: mergedData.rcId || '',
+                        loadingProfile: false
+                    };
+                };
+
+                // PROGRESSIVE LOADING: Fetch full profile FIRST before rendering
                 (async () => {
                     try {
                         const userRef = doc(db, 'users', firebaseUser.uid);
@@ -134,8 +141,6 @@ export const AuthProvider = ({ children }) => {
                             status: status
                         };
 
-                        const avatarUrl = userData.avatar || firebaseUser.photoURL || generateInitialsAvatar(userData.fullName || firebaseUser.displayName || 'User');
-
                         // AUTO-FETCH CLASS: Combined logic (Local studentsData + Firestore students_master)
                         let currentClass = userData.currentClass || userData.classSection || '';
                         
@@ -144,34 +149,27 @@ export const AuthProvider = ({ children }) => {
                                 const emailToSearch = (firebaseUser.email || '').toLowerCase();
                                 const idToSearch = (userData.studentId || firebaseUser.displayName || '').toUpperCase().replace(/^RGUKT-/i, '');
 
-                                // Look in local studentsData first (it has emails!)
-                                console.log("Searching for match with:", { emailToSearch, idToSearch });
+                                // Look in local studentsData first
                                 const localMatch = studentsData?.find(s => 
                                     (emailToSearch && s.email?.toLowerCase() === emailToSearch) ||
                                     (idToSearch && s.id?.toUpperCase() === idToSearch)
                                 );
 
                                 if (localMatch) {
-                                    console.log("Local match found:", localMatch.id, localMatch.name);
                                     if (localMatch.classSection) {
                                         currentClass = formatClassID(localMatch.classSection);
                                         updates.currentClass = currentClass;
                                     }
-                                    
-                                    // PROACTIVE NAME RECOVERY
                                     if ((!userData.fullName || userData.fullName === 'Loading...') && localMatch.name) {
                                         updates.fullName = localMatch.name;
-                                        console.log("Auto-recovered name from local data:", localMatch.name);
                                     }
-
-                                    // Also sync studentId if missing
                                     if (!userData.studentId && localMatch.id) {
                                         updates.studentId = localMatch.id;
                                     }
-                                    console.log("Auto-detected details from local data:", { currentClass, name: localMatch.name });
                                 } 
-                                // Fallback to Firestore students_master if still missing
-                                else if (idToSearch.length >= 6) {
+                                
+                                // Fallback to Firestore students_master
+                                if ((!currentClass || (!userData.department && !updates.branch)) && idToSearch.length >= 6) {
                                     const studentRef = doc(db, 'students_master', idToSearch);
                                     const studentSnap = await getDoc(studentRef);
                                     if (studentSnap.exists()) {
@@ -182,13 +180,10 @@ export const AuthProvider = ({ children }) => {
                                             updates.currentClass = currentClass;
                                         }
 
-                                        // PROACTIVE NAME RECOVERY (Master)
                                         if ((!userData.fullName || userData.fullName === 'Loading...') && (masterData.name || masterData.fullName)) {
                                             updates.fullName = masterData.name || masterData.fullName;
-                                            console.log("Auto-recovered name from master collection:", updates.fullName);
                                         }
 
-                                        // PROACTIVE BRANCH/DEPARTMENT RECOVERY
                                         if (!userData.department && !userData.branch) {
                                             let autoBranch = masterData.branch || masterData.department || '';
                                             if (!autoBranch) {
@@ -198,16 +193,13 @@ export const AuthProvider = ({ children }) => {
                                                     if (attSnap.exists()) {
                                                         autoBranch = attSnap.data().group || '';
                                                     }
-                                                } catch(e) { console.error("Error fetching branch from attendance", e); }
+                                                } catch(e) {}
                                             }
                                             let mappedBranch = mapBranchName(autoBranch);
-                                            if (!mappedBranch) {
-                                                mappedBranch = deriveBranch(currentClass, idToSearch);
-                                            }
+                                            if (!mappedBranch) mappedBranch = deriveBranch(currentClass, idToSearch);
                                             if (mappedBranch) {
                                                 updates.branch = mappedBranch;
                                                 updates.department = mappedBranch;
-                                                console.log("Auto-recovered branch:", mappedBranch);
                                             }
                                         }
                                     }
@@ -219,43 +211,30 @@ export const AuthProvider = ({ children }) => {
 
                         // Assign and sync RGUKT Connect ID if missing
                         if (!userData.rcId && (userData.role === 'student' || !userData.role)) {
-                            const generatedRcId = generateRGUKTConnectID(userData.studentId);
-                            updates.rcId = generatedRcId;
-                            console.log("Auto-assigned RGUKT Connect ID:", generatedRcId);
+                            updates.rcId = generateRGUKTConnectID(userData.studentId);
                         }
 
-                        const rawName = updates.fullName || userData.fullName || firebaseUser.displayName || '';
-                        const cleanName = rawName === 'Loading...' ? '' : rawName;
-                        const fallbackName = cleanName || (firebaseUser.email ? firebaseUser.email.split('@')[0].toUpperCase() : 'Student');
+                        // ATOMIC UPDATE: Create the ONE normalized profile
+                        const fullUser = normalizeFirebaseProfile({ ...userData, ...updates });
 
-                        const fullUser = {
-                            ...initialUser,
-                            ...userData,
-                            ...updates,
-                            fullName: fallbackName,
-                            role: userData.role || initialUser.role || 'student',
-                            bio: userData.bio || 'HI I AM USING RGUKT CONNECT APP',
-                            rcId: updates.rcId || userData.rcId || '',
-                            currentClass: currentClass,
-                            loadingProfile: false
-                        };
-
+                        // We set the complete user profile HERE for the first time
                         setUser(fullUser);
+                        setLoading(false); // NOW we unlock the app, fully loaded.
                         
                         try {
                             localStorage.setItem(`cached_user_profile_${firebaseUser.uid}`, JSON.stringify(fullUser));
-                        } catch (e) { console.error("Error saving cached user", e); }
+                        } catch (e) {}
 
-                        // Sync biometric preference to native Android side
+                        // Sync biometric preference
                         if (fullUser.biometricAuth !== undefined) {
                             nativeAuthService.setAuthEnabled(fullUser.biometricAuth);
                         }
 
-                        // Async updates that don't need to block
+                        // Async background save
                         if (!userDoc.exists() || !userData?.role) {
-                            setDoc(userRef, fullUser, { merge: true }).catch(err => console.error("Background setDoc failed:", err));
+                            setDoc(userRef, fullUser, { merge: true }).catch(e => console.error(e));
                         } else {
-                            updateDoc(userRef, updates).catch(err => console.error("Background updateDoc failed:", err));
+                            updateDoc(userRef, updates).catch(e => console.error(e));
                         }
 
                         // Setup Realtime Sync for Profile Updates
@@ -263,30 +242,46 @@ export const AuthProvider = ({ children }) => {
                             if (snap.exists()) {
                                 const latestData = snap.data();
                                 setUser(prev => {
-                                    const updatedUser = {
-                                        ...prev,
-                                        ...latestData,
-                                        role: latestData.role || prev?.role || 'student',
-                                        loadingProfile: false
-                                    };
+                                    const updatedUser = normalizeFirebaseProfile(latestData, prev);
+                                    
+                                    // Prevent unnecessary re-renders
+                                    const { updatedAt: _1, tokenUpdatedAt: _2, lastLogin: _3, ...prevCore } = prev || {};
+                                    const { updatedAt: _4, tokenUpdatedAt: _5, lastLogin: _6, ...newCore } = updatedUser || {};
+                                    
+                                    if (JSON.stringify(prevCore) === JSON.stringify(newCore)) {
+                                        return prev;
+                                    }
+
                                     try {
                                         localStorage.setItem(`cached_user_profile_${firebaseUser.uid}`, JSON.stringify(updatedUser));
-                                    } catch (e) {
-                                        console.warn("Failed to cache user profile to localStorage:", e);
-                                    }
+                                    } catch (e) {}
                                     return updatedUser;
                                 });
                             }
                         });
-
+                        
                     } catch (error) {
-                        if (error.code === 'unavailable' || error.message?.includes('offline')) {
-                            console.warn("User profile fetch: Client is offline, using temporary session data.");
+                        console.error("Error fetching user data:", error);
+                        // Make sure we at least unlock the app
+                        let cachedUser = null;
+                        try {
+                            const stored = localStorage.getItem(`cached_user_profile_${firebaseUser.uid}`);
+                            if (stored) cachedUser = JSON.parse(stored);
+                        } catch (e) {}
+
+                        if (cachedUser) {
+                            setUser({ ...cachedUser, loadingProfile: false });
                         } else {
-                            console.error("Error fetching user profile in background:", error);
+                            setUser({ 
+                                uid: firebaseUser.uid, 
+                                email: firebaseUser.email, 
+                                fullName: firebaseUser.displayName || 'Loading...',
+                                avatar: firebaseUser.photoURL || generateInitialsAvatar(firebaseUser.displayName || 'User'),
+                                role: 'student',
+                                loadingProfile: false 
+                            });
                         }
-                        // Ensure we don't block the UI if fetch fails
-                        setUser(prev => prev ? { ...prev, loadingProfile: false } : prev);
+                        setLoading(false);
                     }
                 })();
             } else {
@@ -856,19 +851,17 @@ export const AuthProvider = ({ children }) => {
                 formattedData.classSection = formatClassID(formattedData.classSection);
             }
 
-            // OPTIMISTIC UPDATE: Update local state immediately to prevent UI from hanging
+            // Await the DB write to guarantee it succeeded before continuing
+            await setDoc(userRef, {
+                ...formattedData,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+
+            // After successful write, update local state
             setUser(prev => ({
                 ...prev,
                 ...formattedData
             }));
-
-            // Fire and forget the DB write to prevent UI hanging on slow networks
-            setDoc(userRef, {
-                ...formattedData,
-                updatedAt: new Date().toISOString()
-            }, { merge: true }).catch(error => {
-                console.error("Background profile update failed:", error);
-            });
 
         } catch (error) {
             console.error("Error updating profile:", error);

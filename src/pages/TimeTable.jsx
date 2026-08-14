@@ -73,7 +73,9 @@ const TimeTable = () => {
     };
 
     React.useEffect(() => {
+        let isMounted = true;
         const fetchSchedule = async () => {
+            setIsLoading(true);
             let cls = user?.currentClass || '';
 
             const cacheKey = `timetable_full_${cls || user?.studentId || 'unknown'}`;
@@ -89,8 +91,10 @@ const TimeTable = () => {
             }
 
             if (parsedCache && parsedCache !== 'NOT_FOUND') {
-                setSchedule(parsedCache);
-                setIsLoading(false);
+                if (isMounted) {
+                    setSchedule(parsedCache);
+                    setIsLoading(false);
+                }
                 return;
             }
 
@@ -111,10 +115,13 @@ const TimeTable = () => {
             }
 
             if (!cls) {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
                 return;
             }
             try {
+                // Implement a safety timeout to prevent infinite loading
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timetable fetch timeout')), 10000));
+                
                 let docSnap = { exists: () => false };
                 let docRef = null;
                 const branch = user?.department || user?.branch || '';
@@ -159,7 +166,7 @@ const TimeTable = () => {
                 if (branchUpper && section) {
                     try {
                         docRef = doc(db, "timetables", branchUpper, "sections", section.toUpperCase());
-                        docSnap = await getDoc(docRef);
+                        docSnap = await Promise.race([getDoc(docRef), timeoutPromise]);
                     } catch(e) {
                         console.error("Error reading branch/section timetable:", e);
                     }
@@ -199,9 +206,9 @@ const TimeTable = () => {
                     }
                 }
 
-                if (docSnap.exists()) {
+                if (docSnap && docSnap.exists && docSnap.exists()) {
                     const data = docSnap.data();
-                    setSchedule(data);
+                    if (isMounted) setSchedule(data);
                     sessionStorage.setItem(cacheKey, JSON.stringify(data));
                 } else {
                     const clsUpper = cls.toUpperCase().replace(/\s/g, '');
@@ -217,11 +224,12 @@ const TimeTable = () => {
                     } catch (e) {
                         console.error("Error fetching class list for suggestions:", e);
                     }
+                    if (isMounted) setSchedule('NOT_FOUND');
                 }
             } catch (error) {
                 console.error("Error fetching timetable:", error);
             } finally {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
             }
         };
 
@@ -262,6 +270,8 @@ const TimeTable = () => {
 
         fetchSchedule();
         fetchHolidayStatus();
+        
+        return () => { isMounted = false; };
     }, [user?.currentClass, user?.studentId]);
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentDay = new Date().toLocaleDateString('en-US', { weekday: 'long' });

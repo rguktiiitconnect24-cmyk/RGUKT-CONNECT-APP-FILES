@@ -1,17 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { User, Calendar, Smartphone, ChevronDown, ArrowRight, Loader2, CheckCircle, MapPin } from 'lucide-react';
+import { User, Calendar, Smartphone, ChevronDown, ArrowRight, Loader2, CheckCircle, MapPin, GraduationCap } from 'lucide-react';
 import { nativeAuthService } from '../../services/nativeAuthService';
 import DOBSelector from '../Common/DOBSelector';
 import { Capacitor } from '@capacitor/core';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../config/firebase';
+import { formatClassID } from '../../utils/formatUtils';
 import './CompleteProfileModal.css';
 
 const CompleteProfileModal = ({ isOpen, user }) => {
     const { updateProfileData, logout, setIntentionalLogout } = useAuth();
     const { showToast } = useToast();
-    
+
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetchingClass, setIsFetchingClass] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [formData, setFormData] = useState({
         fullName: (user?.fullName && user.fullName !== 'Loading...') ? user.fullName : '',
@@ -86,6 +90,32 @@ const CompleteProfileModal = ({ isOpen, user }) => {
         }
     }, [user]);
 
+    // Auto-fetch from master database if not present
+    useEffect(() => {
+        const fetchMasterData = async () => {
+            if (formData.studentId && !formData.currentClass && !isFetchingClass) {
+                setIsFetchingClass(true);
+                try {
+                    const cleanId = formData.studentId.toUpperCase().replace(/^RGUKT-/i, '');
+                    const studentRef = doc(db, 'students_master', cleanId);
+                    const studentSnap = await getDoc(studentRef);
+                    if (studentSnap.exists()) {
+                        const sData = studentSnap.data();
+                        const fetchedClass = sData.classSection || sData.currentClass || '';
+                        if (fetchedClass) {
+                            setFormData(prev => ({ ...prev, currentClass: formatClassID(fetchedClass) }));
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error auto-fetching class from master data:', e);
+                } finally {
+                    setIsFetchingClass(false);
+                }
+            }
+        };
+        fetchMasterData();
+    }, [formData.studentId, formData.currentClass]);
+
     const actuallyOpen = isOpen || forceOpen;
     if (!actuallyOpen && !isExiting) return null;
 
@@ -95,6 +125,7 @@ const CompleteProfileModal = ({ isOpen, user }) => {
         if (!formData.dob) newErrors.dob = 'Date of Birth is required';
         if (!formData.campus) newErrors.campus = 'Campus selection is required';
         if (!formData.studentId?.trim()) newErrors.studentId = 'University/Student ID is required';
+        if (!formData.currentClass?.trim()) newErrors.currentClass = 'Class could not be auto-fetched from database';
         if (!formData.phone.trim()) {
             newErrors.phone = 'Mobile Number is required';
         } else if (!/^\d{10}$/.test(formData.phone.trim())) {
@@ -116,6 +147,7 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                 dob: formData.dob,
                 phone: formData.phone,
                 studentId: formData.studentId.toUpperCase(),
+                currentClass: formData.currentClass.toUpperCase(),
                 campus: formData.campus,
                 profileCompleted: true
             });
@@ -128,9 +160,8 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                 }, 600); // 600ms fade out duration
             }, 1500);
         } catch (error) {
-            setForceOpen(false);
             console.error('Failed to complete profile:', error);
-            showToast("Failed to complete profile.", "error");
+            showToast("Failed to complete profile. Please try again.", "error");
         } finally {
             setIsLoading(false);
         }
@@ -140,20 +171,20 @@ const CompleteProfileModal = ({ isOpen, user }) => {
         <div className={`onboarding-overlay ${isExiting ? 'exiting' : ''}`}>
             <div className="floating-blob" style={{ top: '-100px', left: '-100px' }}></div>
             <div className="floating-blob" style={{ bottom: '-100px', right: '-100px', background: 'radial-gradient(circle, rgba(78, 222, 163, 0.05) 0%, rgba(78, 222, 163, 0) 70%)' }}></div>
-            
+
             {isSuccess && (
                 <div className="form-success-overlay">
                     <div className="success-animation-container">
                         <svg className="success-svg" viewBox="0 0 52 52">
-                            <circle className="success-circle" cx="26" cy="26" r="25" fill="none"/>
-                            <path className="success-check" fill="none" d="M14 27l7 7 16-16"/>
+                            <circle className="success-circle" cx="26" cy="26" r="25" fill="none" />
+                            <path className="success-check" fill="none" d="M14 27l7 7 16-16" />
                         </svg>
                         <h2 className="success-heading">All Set!</h2>
                         <p className="success-message">Your profile has been updated successfully.</p>
                     </div>
                 </div>
             )}
-            
+
             <main className={`onboarding-main`}>
                 <section className="onboarding-header">
                     <h2 className="onboarding-title">Let's Get Started</h2>
@@ -166,8 +197,8 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                             <label className="form-label">Full Name</label>
                             <div className="input-container">
                                 <User size={20} className="input-icon" />
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     className="glow-input disabled-input"
                                     placeholder="John Doe"
                                     value={formData.fullName}
@@ -181,7 +212,7 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                             <label className="form-label">University / Student ID</label>
                             <div className="input-container">
                                 <User size={20} className="input-icon" />
-                                <input 
+                                <input
                                     type="text" 
                                     className="glow-input disabled-input"
                                     placeholder="e.g. R200000"
@@ -193,10 +224,30 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                         </div>
 
                         <div className="form-field">
+                            <label className="form-label">Current Class</label>
+                            <div className="input-container">
+                                {isFetchingClass ? (
+                                    <Loader2 size={20} className="input-icon spin" />
+                                ) : (
+                                    <GraduationCap size={20} className="input-icon" />
+                                )}
+                                <input 
+                                    type="text" 
+                                    className={`glow-input ${errors.currentClass ? 'error' : ''}`}
+                                    placeholder={isFetchingClass ? "Fetching classroom..." : "e.g. CSE-A"}
+                                    value={formData.currentClass}
+                                    onChange={(e) => setFormData({ ...formData, currentClass: e.target.value.toUpperCase() })}
+                                    title="Enter your class if auto-fetch fails"
+                                />
+                            </div>
+                            {errors.currentClass && <span className="error-message">{errors.currentClass}</span>}
+                        </div>
+
+                        <div className="form-field">
                             <label className="form-label">Date of Birth</label>
-                            <DOBSelector 
+                            <DOBSelector
                                 value={formData.dob}
-                                onChange={(val) => setFormData({...formData, dob: val})}
+                                onChange={(val) => setFormData({ ...formData, dob: val })}
                                 error={!!errors.dob}
                             />
                             {errors.dob && <span className="error-message">{errors.dob}</span>}
@@ -206,9 +257,9 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                             <label className="form-label">Mobile Number</label>
                             <div className="mobile-input-group">
                                 <div className="select-container">
-                                    <select 
+                                    <select
                                         value={formData.countryCode}
-                                        onChange={e => setFormData({...formData, countryCode: e.target.value})}
+                                        onChange={e => setFormData({ ...formData, countryCode: e.target.value })}
                                     >
                                         <option value="+1">+1</option>
                                         <option value="+44">+44</option>
@@ -219,8 +270,8 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                                 </div>
                                 <div className="input-container" style={{ flex: 1 }}>
                                     <Smartphone size={20} className="input-icon" />
-                                    <input 
-                                        type="tel" 
+                                    <input
+                                        type="tel"
                                         className={`glow-input ${errors.phone ? 'error' : ''}`}
                                         placeholder="555-0123"
                                         value={formData.phone}
@@ -233,7 +284,7 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                                         }}
                                         onChange={e => {
                                             const cleanVal = e.target.value.replace(/\D/g, '');
-                                            if (cleanVal.length <= 10) setFormData({...formData, phone: cleanVal});
+                                            if (cleanVal.length <= 10) setFormData({ ...formData, phone: cleanVal });
                                         }}
                                     />
                                 </div>
@@ -245,8 +296,8 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                             <label className="form-label">Campus</label>
                             <div className="input-container">
                                 <MapPin size={20} className="input-icon" />
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     className="glow-input disabled-input"
                                     value={formData.campus}
                                     readOnly
@@ -256,8 +307,8 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                         </div>
                     </div>
 
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         className="continue-btn"
                         disabled={isLoading || isSuccess}
                     >

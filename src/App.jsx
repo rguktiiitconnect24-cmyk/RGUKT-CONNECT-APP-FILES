@@ -98,6 +98,7 @@ const App = () => {
   const [appInfo, setAppInfo] = React.useState({ version: packageJson.version, build: packageJson.buildNumber });
   const [showExitModal, setShowExitModal] = React.useState(false);
   const [showSplash, setShowSplash] = React.useState(true);
+  const initializedFcmUid = React.useRef(null);
 
   // Sync Profile to Widget whenever user data changes
   useEffect(() => {
@@ -112,7 +113,8 @@ const App = () => {
       }).catch(err => console.error('FirebaseAnalytics setUserId error:', err));
     }
 
-    if (user) {
+    if (user && user.uid !== initializedFcmUid.current) {
+      initializedFcmUid.current = user.uid;
       notificationService.initialize(user).catch(err => console.error('FCM init error:', err));
     }
   }, [user]);

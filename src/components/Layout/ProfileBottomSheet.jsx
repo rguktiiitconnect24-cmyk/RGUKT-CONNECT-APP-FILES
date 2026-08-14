@@ -1,12 +1,14 @@
 import { X, User, ChevronRight, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react'; 
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import './ProfileBottomSheet.css';
 
 const ProfileBottomSheet = ({ isOpen, onClose, user, onLogout }) => {
     const [shouldRender, setShouldRender] = useState(isOpen);
     const [isClosing, setIsClosing] = useState(false);
     const [showFullPhoto, setShowFullPhoto] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (isOpen) {
@@ -82,6 +84,7 @@ const ProfileBottomSheet = ({ isOpen, onClose, user, onLogout }) => {
                                 data-route="/profile"
                                 onClick={() => {
                                     onClose();
+                                    navigate('/profile');
                                 }}
                             >
                                 <div className="action-icon-box profile">

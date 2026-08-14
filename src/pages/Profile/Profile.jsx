@@ -453,27 +453,6 @@ const Profile = () => {
         }
     }, [user]);
 
-    // Auto-save form data changes with a debounce to instantly update the website
-    useEffect(() => {
-        if (!user) return;
-        const timeoutId = setTimeout(() => {
-            // Check for meaningful changes to prevent infinite loops
-            const hasChanges = ['fullName', 'email', 'phone', 'bio', 'dob', 'department', 'studentId', 'currentClass', 'campus'].some(key => {
-                const formVal = formData[key] || '';
-                const userVal = user[key] || '';
-                return formVal !== userVal;
-            });
-
-            if (hasChanges) {
-                const dataToSave = { ...formData };
-                if (dataToSave.studentId) {
-                    dataToSave.studentId = dataToSave.studentId.replace(/^RGUKT-/i, '');
-                }
-                updateProfileData(dataToSave).catch(e => console.error("Auto-save failed:", e));
-            }
-        }, 800);
-        return () => clearTimeout(timeoutId);
-    }, [formData]);
 
 
     // Auto-resize bio textarea
@@ -1896,7 +1875,17 @@ const Profile = () => {
                                         </div>
                                         <div className="profile-detail-item">
                                             <Calendar size={12} className="detail-icon" />
-                                            <span>2023 - 2027</span>
+                                            <span>
+                                                {(() => {
+                                                    const id = formData.studentId || user?.studentId || '';
+                                                    const yearMatch = id.match(/^[a-zA-Z](\d{2})/);
+                                                    if (yearMatch) {
+                                                        const admissionYear = 2000 + parseInt(yearMatch[1], 10);
+                                                        return `${admissionYear} - ${admissionYear + 6}`;
+                                                    }
+                                                    return '2024 - 2030';
+                                                })()}
+                                            </span>
                                         </div>
                                         <div className="profile-detail-item">
                                             <MapPin size={12} className="detail-icon" />
