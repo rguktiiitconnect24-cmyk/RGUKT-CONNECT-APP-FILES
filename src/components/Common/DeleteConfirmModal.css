@@ -1,0 +1,133 @@
+.delete-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+/* backdrop-filter: blur(12px) saturate(180%); */
+/* -webkit-backdrop-filter: blur(12px) saturate(180%); */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 110000;
+    padding: 1.5rem;
+}
+
+.delete-modal-content {
+    background: rgba(255, 255, 255, 0.98);
+/* backdrop-filter: blur(20px); */
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+    box-shadow: 
+        0 30px 60px -12px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(244, 63, 94, 0.1);
+}
+
+[data-theme='dark'] .delete-modal-content {
+    background: rgba(15, 23, 42, 0.95);
+    box-shadow: 
+        0 35px 70px -12px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(244, 63, 94, 0.2);
+}
+
+.delete-modal-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.5rem;
+    background: rgba(244, 63, 94, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text-main);
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+.delete-modal-header p {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    padding: 0 0.5rem;
+}
+
+.delete-modal-header p strong {
+    color: var(--color-text-main);
+}
+
+.delete-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.delete-modal-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: none;
+}
+
+.delete-modal-btn.confirm {
+    background: rgba(244, 63, 94, 0.1);
+    color: #f43f5e;
+    box-shadow: none;
+    border: 1px solid rgba(244, 63, 94, 0.15);
+}
+
+.delete-modal-btn.confirm:hover {
+    background: rgba(244, 63, 94, 0.18);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(244, 63, 94, 0.15);
+}
+
+[data-theme='dark'] .delete-modal-btn.confirm {
+    background: rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+    border-color: rgba(244, 63, 94, 0.25);
+}
+
+[data-theme='dark'] .delete-modal-btn.confirm:hover {
+    background: rgba(244, 63, 94, 0.25);
+}
+
+.delete-modal-btn.confirm:active {
+    transform: scale(0.97);
+}
+
+.delete-modal-btn.cancel {
+    background: var(--color-slate-100);
+    color: var(--color-slate-600);
+}
+
+[data-theme='dark'] .delete-modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-slate-300);
+}
+
+.delete-modal-btn.cancel:hover {
+    background: var(--color-slate-200);
+}
+
+[data-theme='dark'] .delete-modal-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.delete-modal-btn.cancel:active {
+    transform: scale(0.97);
+}

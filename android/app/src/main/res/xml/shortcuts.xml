@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="dashboard"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_home"
+        android:shortcutShortLabel="@string/shortcut_dashboard_short"
+        android:shortcutLongLabel="@string/shortcut_dashboard_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rgukt.connect"
+            android:targetClass="com.rgukt.connect.MainActivity">
+            <extra android:name="target_page" android:value="/dashboard" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="courses"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_courses"
+        android:shortcutShortLabel="@string/shortcut_courses_short"
+        android:shortcutLongLabel="@string/shortcut_courses_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rgukt.connect"
+            android:targetClass="com.rgukt.connect.MainActivity">
+            <extra android:name="target_page" android:value="/courses" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="timetable"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_timetable"
+        android:shortcutShortLabel="@string/shortcut_timetable_short"
+        android:shortcutLongLabel="@string/shortcut_timetable_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rgukt.connect"
+            android:targetClass="com.rgukt.connect.MainActivity">
+            <extra android:name="target_page" android:value="/timetable" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="exams"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_exams"
+        android:shortcutShortLabel="@string/shortcut_exams_short"
+        android:shortcutLongLabel="@string/shortcut_exams_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rgukt.connect"
+            android:targetClass="com.rgukt.connect.MainActivity">
+            <extra android:name="target_page" android:value="/exams" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="complaints"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_complaints"
+        android:shortcutShortLabel="@string/shortcut_complaints_short"
+        android:shortcutLongLabel="@string/shortcut_complaints_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.rgukt.connect"
+            android:targetClass="com.rgukt.connect.MainActivity">
+            <extra android:name="target_page" android:value="/complaints" />
+        </intent>
+    </shortcut>
+</shortcuts>

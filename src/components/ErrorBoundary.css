@@ -1,0 +1,126 @@
+.error-boundary-container {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #f8fafc;
+    font-family: 'Inter', 'Roboto', sans-serif;
+    text-align: center;
+}
+
+.error-boundary-content {
+    background: rgba(255, 255, 255, 0.05);
+/* backdrop-filter: blur(10px); */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    max-width: 90%;
+    width: 400px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: errorSlideUp 0.5s ease-out;
+}
+
+.error-boundary-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(to right, #f87171, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+}
+
+.error-boundary-desc {
+    font-size: 1rem;
+    color: #cbd5e1;
+    margin-bottom: 1.5rem;
+}
+
+.error-boundary-code {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    color: #fca5a5;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    text-align: left;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.error-boundary-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39);
+    width: 100%;
+}
+
+.error-boundary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.error-boundary-btn:active {
+    transform: translateY(1px);
+}
+
+@media (min-width: 640px) {
+    .error-boundary-content {
+        padding: 3rem;
+        width: 600px;
+    }
+    .error-boundary-title {
+        font-size: 2.5rem;
+    }
+    .error-boundary-desc {
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
+    }
+    .error-boundary-code {
+        padding: 1.5rem;
+        font-size: 0.875rem;
+        margin-bottom: 2rem;
+        white-space: pre;
+        word-break: normal;
+    }
+    .error-boundary-btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        width: auto;
+    }
+}
+
+.error-boundary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.error-boundary-btn:active {
+    transform: translateY(1px);
+}
+
+@keyframes errorSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

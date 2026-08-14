@@ -1,0 +1,212 @@
+.faculty-subjects-container {
+    padding: 2rem;
+    min-height: 100dvh;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.faculty-subjects-header {
+    margin-bottom: 2rem;
+}
+
+.faculty-subjects-header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dark .faculty-subjects-header h1 {
+    background: linear-gradient(135deg, #f8fafc 0%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.faculty-subjects-header p {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.subject-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .subject-card {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.subject-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.dark .subject-card:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.subject-card-banner {
+    height: 120px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+}
+
+.banner-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%);
+}
+
+.banner-emerald {
+    background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+}
+
+.subject-card-banner h2 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    z-index: 2;
+}
+
+.subject-card-banner p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    z-index: 2;
+}
+
+.subject-card-content {
+    padding: 1.5rem;
+}
+
+.subject-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.subject-meta-stats {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.dark .subject-meta-stats {
+    color: #94a3b8;
+}
+
+.manage-content-btn {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #3b82f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.manage-content-btn:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+.dark .manage-content-btn {
+    color: #60a5fa;
+}
+
+.dark .manage-content-btn:hover {
+    color: #93c5fd;
+}
+
+.resources-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.dark .resources-grid {
+    border-top-color: #334155;
+}
+
+.resource-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.resource-item:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.resource-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resource-item span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.dark .resource-item span {
+    color: #cbd5e1;
+}
+
+/* Specific Resource Colors */
+.res-pdf .resource-icon-wrapper {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+.res-notes .resource-icon-wrapper {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+.res-video .resource-icon-wrapper {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+.res-link .resource-icon-wrapper {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .faculty-subjects-container {
+        padding: 1rem;
+    }
+}

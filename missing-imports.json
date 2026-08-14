@@ -1,0 +1,1410 @@
+{
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\check_columns.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\convert_excel.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\read_excel.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\App.jsx": [
+    "LoadingTransition",
+    "Navigate",
+    "ProfessionalSplash",
+    "OfflineIndicator",
+    "ExitConfirmModal",
+    "Suspense",
+    "DownloadProvider",
+    "NavigationProvider",
+    "NotificationWatcher",
+    "Routes",
+    "Route",
+    "Layout"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Admin\\FileUploadWidget.jsx": [
+    "UploadCloud",
+    "FileText",
+    "X",
+    "Loader2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Admin\\UnitQuizManager.jsx": [
+    "ChevronDown",
+    "X",
+    "List",
+    "Settings",
+    "Loader2",
+    "Save",
+    "Plus",
+    "Edit2",
+    "Trash2",
+    "Check",
+    "Lightbulb"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Calendar\\CustomCalendar.jsx": [
+    "ChevronLeft",
+    "ChevronRight",
+    "LayoutGrid",
+    "List",
+    "AnimatePresence",
+    "motion",
+    "CheckCircle2",
+    "X",
+    "CalendarIcon",
+    "Clock",
+    "Edit2",
+    "Trash2",
+    "Plus"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\CourseSelectionModal.jsx": [
+    "ArrowLeft",
+    "BookOpen",
+    "X",
+    "ChevronRight",
+    "Calendar"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\CustomSelect.jsx": [
+    "ChevronDown",
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\ImageUpload.jsx": [
+    "Upload",
+    "X",
+    "Loader",
+    "Check",
+    "ImageIcon"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\LogoutConfirm.jsx": [
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\MidnightSplash.jsx": [
+    "ModernLoader"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\NoInternetScreen.jsx": [
+    "Branding",
+    "Globe",
+    "WifiOff",
+    "RefreshCw",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\OfflineIndicator.jsx": [
+    "NoInternetScreen",
+    "Globe"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Common\\ProfileCompletionReminder.jsx": [
+    "AnimatePresence",
+    "motion",
+    "User"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Dashboard\\CgpaModal.jsx": [
+    "X",
+    "GraduationCap",
+    "ChevronRight",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Dashboard\\HeaderAnimationSheet.jsx": [
+    "X",
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Layout\\AttendanceBottomSheet.jsx": [
+    "PieChart",
+    "X",
+    "User",
+    "GraduationCap",
+    "AlertCircle",
+    "Info"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Layout\\Layout.jsx": [
+    "ProfileBottomSheet",
+    "LogoutConfirm",
+    "Sidebar",
+    "Outlet",
+    "AppFooter",
+    "BottomNav"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Layout\\ProfileBottomSheet.jsx": [
+    "X",
+    "User",
+    "ChevronRight",
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Layout\\Sidebar.jsx": [
+    "LogoutConfirm",
+    "GraduationCap",
+    "ChevronRight",
+    "ChevronLeft",
+    "NavLink",
+    "Sun",
+    "Moon",
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\LiveClassTracker.jsx": [
+    "Beaker",
+    "PenTool",
+    "Laptop",
+    "Database",
+    "Code",
+    "BookOpen",
+    "Clock"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\MobileTimetable\\MobileTimetable.jsx": [
+    "Calendar",
+    "ChevronDown",
+    "React"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\NoticeCard\\NoticeCard.jsx": [
+    "Tag",
+    "Calendar",
+    "Clock",
+    "Paperclip",
+    "ChevronRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Profile\\CompleteProfileModal.jsx": [
+    "ChevronDown",
+    "Check",
+    "Calendar",
+    "ChevronLeft",
+    "ChevronRight",
+    "Phone",
+    "Mail",
+    "MapPin",
+    "LogOut",
+    "Loader2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Profile\\ImageUploadModal.jsx": [
+    "X",
+    "Camera",
+    "Cropper",
+    "AlertCircle",
+    "Check",
+    "Crop",
+    "Upload"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Profile\\NavigationSettings.jsx": [
+    "Wind",
+    "Highlighter",
+    "Maximize"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Profile\\SecuritySettings.jsx": [
+    "Fingerprint",
+    "Lock",
+    "EyeOff",
+    "Eye"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Profile\\StudentIDCard.jsx": [
+    "X",
+    "GraduationCap",
+    "Shield",
+    "Calendar",
+    "Phone",
+    "MapPin",
+    "QRCode",
+    "RefreshCw",
+    "Download",
+    "Share2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Profile\\ThemeSettings.jsx": [
+    "Settings",
+    "Check",
+    "Sun",
+    "Moon"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\QRAuth\\QRGenerator.jsx": [
+    "X",
+    "RefreshCw",
+    "QRCode",
+    "Smartphone",
+    "CheckCircle",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\QRAuth\\QRScanner.jsx": [
+    "X",
+    "Loader2",
+    "CheckCircle",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\Quiz\\EmbeddedQuiz.jsx": [
+    "RefreshCw",
+    "CheckCircle",
+    "XCircle",
+    "Clock",
+    "ChevronLeft",
+    "ChevronRight",
+    "Save"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\components\\TimetableDashboardHeader.jsx": [
+    "Clock",
+    "Calendar",
+    "Share2",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\context\\DownloadContext.jsx": [
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\context\\ToastContext.jsx": [
+    "RotateCcw",
+    "X"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminDashboard.jsx": [
+    "LoadingTransition",
+    "Shield",
+    "CheckCircle",
+    "AlertCircle",
+    "Users",
+    "BookOpen",
+    "MessageSquare",
+    "Activity",
+    "GraduationCap",
+    "FileText",
+    "Calendar",
+    "RefreshCw",
+    "Database",
+    "Award",
+    "QrCode",
+    "UploadCloud"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminExamSettings.jsx": [
+    "LoadingTransition",
+    "ChevronLeft",
+    "Trash2",
+    "Loader2",
+    "Save",
+    "Search",
+    "UploadCloud",
+    "AlertCircle",
+    "CheckCircle",
+    "ChevronRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminExams.jsx": [
+    "LoadingTransition",
+    "MapPinIcon",
+    "Trash2",
+    "Loader2",
+    "Save",
+    "Plus",
+    "ArrowUp",
+    "ArrowDown",
+    "Copy",
+    "Edit3",
+    "Calendar"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminFeedback.jsx": [
+    "MessageSquare",
+    "CheckCircle2",
+    "Search",
+    "User",
+    "Star",
+    "Calendar"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminQRScanner.jsx": [
+    "X",
+    "AlertCircle",
+    "RefreshCw",
+    "QrCode"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminQuestionAnalytics.jsx": [
+    "LoadingTransition",
+    "ArrowLeft",
+    "CheckCircle",
+    "ResponsiveContainer",
+    "BarChart",
+    "CartesianGrid",
+    "XAxis",
+    "YAxis",
+    "RechartsTooltip",
+    "Bar",
+    "Cell",
+    "Users",
+    "Clock",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminQuestionBank.jsx": [
+    "ArrowLeft"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminQuizAnalytics.jsx": [
+    "LoadingTransition",
+    "Users",
+    "TrendingUp",
+    "Award",
+    "CheckCircle",
+    "ResponsiveContainer",
+    "PieChart",
+    "Pie",
+    "Cell",
+    "RechartsTooltip",
+    "Legend",
+    "Clock",
+    "Search",
+    "Filter",
+    "AlertCircle",
+    "React",
+    "ChevronUp",
+    "ChevronDown",
+    "XCircle",
+    "Target",
+    "BarChart",
+    "CartesianGrid",
+    "XAxis",
+    "YAxis",
+    "Bar",
+    "HelpCircle",
+    "ArrowLeft"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminQuizForm.jsx": [
+    "LoadingTransition",
+    "ArrowLeft",
+    "Save"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminQuizList.jsx": [
+    "BarChart2",
+    "CustomSelect",
+    "BookOpen",
+    "ChevronRight",
+    "LoadingTransition",
+    "AlertCircle",
+    "ChevronDown",
+    "HelpCircle",
+    "Users",
+    "CheckCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AdminStudentDetail.jsx": [
+    "RefreshCw",
+    "AlertCircle",
+    "ChevronLeft",
+    "QrCode",
+    "GraduationCap",
+    "CheckCircle",
+    "XCircle",
+    "QRCode",
+    "TrendingUp",
+    "CreditCard",
+    "User",
+    "Mail",
+    "Phone",
+    "MapPin",
+    "BookOpen",
+    "Calendar",
+    "Shield",
+    "Clock",
+    "Bell",
+    "Users"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AppUpdateManagement.jsx": [
+    "RefreshCw",
+    "Download",
+    "motion",
+    "FileCode",
+    "Hash",
+    "LinkIcon",
+    "MessageSquare",
+    "ShieldAlert",
+    "AnimatePresence",
+    "CheckCircle2",
+    "AlertTriangle",
+    "ArrowRight",
+    "Smartphone"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\AttendanceManagement.jsx": [
+    "Database",
+    "Upload",
+    "Users",
+    "CheckCircle2",
+    "AlertCircle",
+    "Loader2",
+    "FileText"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\BookOrdersManagement.jsx": [
+    "Clock",
+    "BookOpen",
+    "CheckCircle",
+    "XCircle",
+    "Library",
+    "Search",
+    "Loader",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\CgpaManagement.jsx": [
+    "Award",
+    "Upload",
+    "Users",
+    "CheckCircle2",
+    "AlertCircle",
+    "Loader2",
+    "FileText"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\ComplaintsManagement.jsx": [
+    "LoadingTransition",
+    "UserX",
+    "User",
+    "ArrowLeft",
+    "ArrowUpRight",
+    "AlertTriangle",
+    "CheckCircle",
+    "BarChart2",
+    "ChevronDown",
+    "CheckSquare",
+    "XCircle",
+    "Search",
+    "Filter",
+    "MessageSquare",
+    "AlertCircle",
+    "Clock",
+    "Trash2",
+    "Settings",
+    "Send",
+    "RefreshCw",
+    "ShieldX"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\ContentManagement.jsx": [
+    "Save",
+    "Plus",
+    "X",
+    "LoadingTransition",
+    "ExternalLink",
+    "Edit2",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\CourseContentManagement.jsx": [
+    "CustomSelect",
+    "ClipboardPaste",
+    "Copy",
+    "Scissors",
+    "ChevronRight",
+    "Trash2",
+    "Plus",
+    "Edit2",
+    "HelpCircle",
+    "Video",
+    "FileText",
+    "X",
+    "BookOpen",
+    "AlertCircle",
+    "Loader2",
+    "FileUploadWidget",
+    "ChevronDown",
+    "React",
+    "CheckCircle",
+    "XCircle",
+    "UnitQuizManager"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\CreateAdminAccount.jsx": [
+    "UserPlus",
+    "Shield",
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\CreateFacultyAccount.jsx": [
+    "User",
+    "Briefcase",
+    "BookOpen",
+    "Key",
+    "Shield",
+    "motion",
+    "Camera",
+    "AlertCircle",
+    "Check",
+    "Copy",
+    "CheckCircle2",
+    "ArrowLeft",
+    "AnimatePresence",
+    "ArrowRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\CreateNotice.jsx": [
+    "Save",
+    "Send"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\NoticeManagement.jsx": [
+    "Plus",
+    "Eye",
+    "BarChart2",
+    "Edit2",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\TestFileUpload.jsx": [
+    "UploadCloud",
+    "X",
+    "File",
+    "ImageIcon",
+    "AlertCircle",
+    "CheckCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\TimetableManagement.jsx": [
+    "Calendar",
+    "LoadingTransition",
+    "Plus",
+    "Check",
+    "Trash2",
+    "Edit2",
+    "Loader2",
+    "Save",
+    "Clock",
+    "Link",
+    "X",
+    "Unlink"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Admin\\UserManagement.jsx": [
+    "BulkUpdater",
+    "MoreVertical",
+    "Search",
+    "Filter",
+    "Mail",
+    "Download",
+    "LoadingTransition",
+    "Eye",
+    "MailCheck",
+    "Edit2",
+    "Trash2",
+    "X",
+    "AlertCircle",
+    "Monitor",
+    "AlertTriangle",
+    "Check",
+    "CustomSelect"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\ForgetPassword.jsx": [
+    "Branding",
+    "AlertCircle",
+    "ShieldCheck",
+    "User",
+    "ArrowRight",
+    "CheckCircle2",
+    "Link",
+    "ArrowLeft",
+    "AppFooter"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Login.jsx": [
+    "Branding",
+    "Check",
+    "AlertCircle",
+    "Mail",
+    "UserCircle",
+    "Link",
+    "Lock",
+    "EyeOff",
+    "Eye",
+    "ArrowRight",
+    "AppFooter",
+    "Sparkle",
+    "Sparkles",
+    "ShieldAlert",
+    "ShieldCheck",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Profile\\Profile.jsx": [
+    "Search",
+    "ChevronRight",
+    "Sun",
+    "Pointer",
+    "Wind",
+    "Highlighter",
+    "Maximize",
+    "Camera",
+    "CustomSelect",
+    "Lock",
+    "Fingerprint",
+    "EyeOff",
+    "Eye",
+    "FileDown",
+    "LoadingSpinner",
+    "Share2",
+    "LogoutConfirm",
+    "GraduationCap",
+    "Phone",
+    "Calendar",
+    "MapPin",
+    "Download",
+    "QrCode",
+    "Headphones",
+    "LogOut",
+    "X",
+    "ChevronLeft",
+    "XCircle",
+    "QRGenerator",
+    "ImageUploadModal",
+    "StudentIDCard"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\admin-panel\\src\\pages\\Welcome.jsx": [
+    "motion",
+    "AnimatePresence",
+    "ArrowRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\append_css.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\check_sheets.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\clean_admin_pages.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\convert.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\convert_students.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\db_check.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\debug_ong.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\debug_rows.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fetch_questions.mjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix-imports.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix2.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix3.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix_corrupted.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix_css.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix_dashboard.cjs": [
+    "Buffer"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\fix_duplicate.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\generate_icon.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\inspect_s24.mjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\patch.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\query.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\query2.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\remove_s24_classes.mjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\restore.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\restore_dashboard.cjs": [
+    "Buffer",
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\restore_tt.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\rgukt-connect\\src\\App.jsx": [
+    "Loader2",
+    "Send",
+    "CheckCircle2",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\rgukt-connect\\src\\main.jsx": [
+    "StrictMode",
+    "App"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\scratch\\replace.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\scratch\\replace_safer.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\search_id.cjs": [
+    "console",
+    "process"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\App.jsx": [
+    "LoadingTransition",
+    "Navigate",
+    "ProfessionalSplash",
+    "OfflineIndicator",
+    "ExitConfirmModal",
+    "Suspense",
+    "DownloadProvider",
+    "NavigationProvider",
+    "CartProvider",
+    "NotificationWatcher",
+    "Routes",
+    "Route",
+    "Layout"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Admin\\UnitQuizManager.jsx": [
+    "X",
+    "List",
+    "Settings",
+    "Loader2",
+    "Save",
+    "Plus",
+    "Lightbulb",
+    "Edit2",
+    "Trash2",
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Calendar\\CustomCalendar.jsx": [
+    "ChevronLeft",
+    "ChevronRight",
+    "LayoutGrid",
+    "List",
+    "AnimatePresence",
+    "motion",
+    "CheckCircle2",
+    "X",
+    "CalendarIcon",
+    "Clock",
+    "Edit2",
+    "Trash2",
+    "Plus"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\CourseSelectionModal.jsx": [
+    "ArrowLeft",
+    "BookOpen",
+    "X",
+    "ChevronRight",
+    "Calendar"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\CustomSelect.jsx": [
+    "ChevronDown",
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\DeleteConfirmModal.jsx": [
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\ImageUpload.jsx": [
+    "Upload",
+    "X",
+    "Loader",
+    "Check",
+    "ImageIcon"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\LogoutConfirm.jsx": [
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\MidnightSplash.jsx": [
+    "ModernLoader"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\NoInternetScreen.jsx": [
+    "Branding",
+    "Globe",
+    "WifiOff",
+    "RefreshCw",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\OfflineIndicator.jsx": [
+    "NoInternetScreen",
+    "Globe"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\PdfDownloadCard.jsx": [
+    "Eye",
+    "RefreshCcw",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Common\\ProfileCompletionReminder.jsx": [
+    "AnimatePresence",
+    "motion",
+    "User"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Dashboard\\BirthdayPopup.jsx": [
+    "X",
+    "Gift"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Dashboard\\CgpaModal.jsx": [
+    "X",
+    "GraduationCap",
+    "ChevronRight",
+    "Loader2",
+    "Share2",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Dashboard\\HeaderAnimationSheet.jsx": [
+    "X",
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Layout\\AttendanceBottomSheet.jsx": [
+    "PieChart",
+    "X",
+    "User",
+    "GraduationCap",
+    "AlertCircle",
+    "Info"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Layout\\Layout.jsx": [
+    "ProfileBottomSheet",
+    "LogoutConfirm",
+    "Sidebar",
+    "Outlet",
+    "AppFooter",
+    "RCBookHubNav",
+    "BottomNav"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Layout\\ProfileBottomSheet.jsx": [
+    "X",
+    "User",
+    "ChevronRight",
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Layout\\Sidebar.jsx": [
+    "LogoutConfirm",
+    "GraduationCap",
+    "ChevronRight",
+    "ChevronLeft",
+    "NavLink",
+    "Sun",
+    "Moon",
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\LiveClassTracker.jsx": [
+    "Beaker",
+    "PenTool",
+    "Laptop",
+    "Database",
+    "Code",
+    "BookOpen",
+    "Clock"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\MobileTimetable\\MobileTimetable.jsx": [
+    "Calendar",
+    "ChevronDown"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\NoticeCard\\NoticeCard.jsx": [
+    "Tag",
+    "Calendar",
+    "Clock",
+    "Paperclip",
+    "ChevronRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Profile\\CompleteProfileModal.jsx": [
+    "ChevronDown",
+    "Check",
+    "Calendar",
+    "ChevronLeft",
+    "ChevronRight",
+    "Phone",
+    "Mail",
+    "MapPin",
+    "LogOut",
+    "Loader2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Profile\\ImageUploadModal.jsx": [
+    "X",
+    "Camera",
+    "Cropper",
+    "AlertCircle",
+    "Check",
+    "Crop",
+    "Upload"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Profile\\NavigationSettings.jsx": [
+    "Wind",
+    "Highlighter",
+    "Maximize"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Profile\\SecuritySettings.jsx": [
+    "Fingerprint",
+    "Lock",
+    "EyeOff",
+    "Eye"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Profile\\StudentIDCard.jsx": [
+    "X",
+    "GraduationCap",
+    "Shield",
+    "Calendar",
+    "Phone",
+    "MapPin",
+    "QRCode",
+    "RefreshCw",
+    "Download",
+    "Share2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Profile\\ThemeSettings.jsx": [
+    "Settings",
+    "Check",
+    "Sun",
+    "Moon"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\QRAuth\\QRGenerator.jsx": [
+    "X",
+    "RefreshCw",
+    "QRCode",
+    "Smartphone",
+    "CheckCircle",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\QRAuth\\QRScanner.jsx": [
+    "X",
+    "Loader2",
+    "CheckCircle",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\Quiz\\EmbeddedQuiz.jsx": [
+    "ChevronLeft",
+    "RefreshCw",
+    "CheckCircle",
+    "XCircle",
+    "Clock",
+    "ChevronRight",
+    "Save"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\components\\TimetableDashboardHeader.jsx": [
+    "Clock",
+    "Calendar",
+    "Share2",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\context\\DownloadContext.jsx": [
+    "Check"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\context\\ToastContext.jsx": [
+    "RotateCcw",
+    "X"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\AccountInactive.jsx": [
+    "Lock",
+    "CheckCircle",
+    "AlertCircle",
+    "Send",
+    "LogOut"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Admin\\AdminFeedback.jsx": [
+    "MessageSquare",
+    "CheckCircle2",
+    "Search",
+    "User",
+    "Star",
+    "Calendar"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Admin\\PdfDashboard.jsx": [
+    "Link",
+    "PlusCircle",
+    "FileText",
+    "HardDrive",
+    "Download",
+    "Search",
+    "Eye",
+    "Edit",
+    "Trash2",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Admin\\PdfUpload.jsx": [
+    "AlertCircle",
+    "CheckCircle",
+    "FileText",
+    "Loader2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\AttendanceDetail.jsx": [
+    "ArrowLeft",
+    "Info",
+    "GraduationCap",
+    "TrendingUp",
+    "Clock",
+    "Calendar",
+    "Users",
+    "MapPin"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\AttendanceList.jsx": [
+    "Users",
+    "Search",
+    "ChevronLeft",
+    "ChevronRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\ComplaintDetail.jsx": [
+    "CheckCircle",
+    "Activity",
+    "Clock",
+    "motion",
+    "FileText",
+    "Calendar",
+    "Bookmark",
+    "MessageSquare",
+    "MessageSquarePlus",
+    "History",
+    "X",
+    "Paperclip"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\ComplaintHistory.jsx": [
+    "CheckCircle",
+    "Activity",
+    "Clock",
+    "selectedComplaint",
+    "replyText",
+    "setIsReplying",
+    "setSelectedComplaint",
+    "setReplyText",
+    "MessageSquare",
+    "motion",
+    "Trash2",
+    "AnimatePresence"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Complaints.jsx": [
+    "BookOpen",
+    "Home",
+    "Coffee",
+    "Truck",
+    "Wifi",
+    "PenTool",
+    "FileText",
+    "MoreHorizontal",
+    "motion",
+    "History",
+    "AnimatePresence",
+    "X",
+    "User",
+    "Shield",
+    "Send"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\CourseSemesters.jsx": [
+    "LoadingTransition",
+    "CourseCard"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\CourseSubjects.jsx": [
+    "Heart",
+    "LoadingTransition",
+    "ChevronRight",
+    "Loader2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Courses.jsx": [
+    "Heart",
+    "ChevronDown",
+    "ArrowLeft",
+    "Info"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Dashboard\\Dashboard.jsx": [
+    "ArrowUpRight",
+    "Calendar",
+    "CompleteProfileModal",
+    "AttendanceBottomSheet",
+    "CgpaModal",
+    "CourseSelectionModal",
+    "NoticeCard",
+    "BirthdayPopup",
+    "Navigate"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\DownloadedPdfs.jsx": [
+    "LoadingTransition",
+    "Search",
+    "Smartphone",
+    "AlertCircle",
+    "Trash2",
+    "DeleteConfirmModal"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Exams.jsx": [
+    "LoadingTransition",
+    "Search",
+    "Loader2",
+    "MapPin",
+    "UserIcon",
+    "Share2",
+    "Download",
+    "Bookmark",
+    "Calendar",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Faculty\\FacultyAssignments.jsx": [
+    "Plus",
+    "Search",
+    "Filter",
+    "ClipboardList",
+    "Clock",
+    "CheckCircle",
+    "Edit2",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Faculty\\FacultyAttendance.jsx": [
+    "UserCheck",
+    "ResponsiveContainer",
+    "BarChart",
+    "CartesianGrid",
+    "XAxis",
+    "YAxis",
+    "Tooltip",
+    "Bar",
+    "Search",
+    "Filter",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Faculty\\FacultyDashboard.jsx": [
+    "LoadingSpinner",
+    "BookOpen",
+    "Users",
+    "FileText",
+    "CheckCircle",
+    "Clock",
+    "Bell"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Faculty\\FacultyNotices.jsx": [
+    "Plus",
+    "Search",
+    "Filter",
+    "Pin",
+    "Bell",
+    "Tag",
+    "Clock",
+    "Eye",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Faculty\\FacultyQuizzes.jsx": [
+    "Plus",
+    "ResponsiveContainer",
+    "AreaChart",
+    "CartesianGrid",
+    "XAxis",
+    "YAxis",
+    "Tooltip",
+    "Area",
+    "Search",
+    "Filter",
+    "FileText",
+    "Edit2",
+    "BarChart2",
+    "Settings",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Faculty\\FacultySubjects.jsx": [
+    "FileText",
+    "Book",
+    "Video",
+    "LinkIcon"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\ForgetPassword.jsx": [
+    "Branding",
+    "AlertCircle",
+    "ShieldCheck",
+    "User",
+    "ArrowRight",
+    "CheckCircle2",
+    "Link",
+    "ArrowLeft",
+    "AppFooter"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Login.jsx": [
+    "LoadingTransition",
+    "Branding",
+    "AlertCircle",
+    "Mail",
+    "UserCircle",
+    "Link",
+    "Lock",
+    "EyeOff",
+    "Eye",
+    "ArrowRight",
+    "AppFooter",
+    "Sparkle",
+    "Sparkles",
+    "ShieldAlert",
+    "Check",
+    "ShieldCheck",
+    "Trash2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\ModuleContent.jsx": [
+    "doc",
+    "db",
+    "getDoc",
+    "LoadingTransition",
+    "BookOpen",
+    "PdfDownloadCard",
+    "PlayCircle",
+    "Lightbulb",
+    "RefreshCw",
+    "ArrowRight",
+    "ArrowLeft",
+    "HelpCircle",
+    "ExternalLink",
+    "EmbeddedQuiz"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\NoticeBoard\\NoticeBoard.jsx": [
+    "Bell",
+    "Search",
+    "NoticeCard",
+    "AlertCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\NoticeBoard\\NoticeDetails.jsx": [
+    "setIsBookmarked",
+    "User",
+    "Calendar",
+    "Paperclip",
+    "Eye",
+    "Download",
+    "Share2"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Profile\\Profile.jsx": [
+    "Search",
+    "ChevronRight",
+    "Sun",
+    "Wind",
+    "Highlighter",
+    "Maximize",
+    "Camera",
+    "Lock",
+    "CustomSelect",
+    "Fingerprint",
+    "EyeOff",
+    "Eye",
+    "FileDown",
+    "LoadingSpinner",
+    "Share2",
+    "LogoutConfirm",
+    "GraduationCap",
+    "Phone",
+    "Calendar",
+    "MapPin",
+    "Download",
+    "QrCode",
+    "Headphones",
+    "LogOut",
+    "X",
+    "ChevronLeft",
+    "XCircle",
+    "QRGenerator",
+    "ImageUploadModal",
+    "StudentIDCard"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\RCBookHub\\Cart.jsx": [
+    "CheckCircle",
+    "Link",
+    "ShoppingCart",
+    "ArrowLeft",
+    "Trash2",
+    "Loader",
+    "Send",
+    "XCircle"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\RCBookHub\\OrderDetails.jsx": [
+    "Clock",
+    "BookOpen",
+    "CheckCircle",
+    "XCircle",
+    "Loader",
+    "ArrowLeft",
+    "Download"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\RCBookHub\\OrderHistory.jsx": [
+    "Clock",
+    "BookOpen",
+    "CheckCircle",
+    "XCircle",
+    "History",
+    "Loader",
+    "Link",
+    "ChevronRight"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\RCBookHub\\RCBookHub.jsx": [
+    "Library",
+    "ShoppingCart",
+    "BookOpen",
+    "Plus"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\RCBookHub\\RCBookHubProfile.jsx": [
+    "User",
+    "MapPin"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Register.jsx": [
+    "Link",
+    "ShieldCheck",
+    "Sparkle",
+    "Sparkles",
+    "Layout",
+    "Branding",
+    "UserCircle",
+    "AlertCircle",
+    "CreditCard",
+    "Check",
+    "Loader2",
+    "User",
+    "Mail",
+    "GraduationCap",
+    "Lock",
+    "ArrowRight",
+    "AppFooter"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Student\\Library.jsx": [
+    "Search",
+    "Clock",
+    "Download",
+    "Eye",
+    "BookX"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\SubjectUnits.jsx": [
+    "Layers",
+    "FileText",
+    "HelpCircle",
+    "ChevronRight",
+    "Clock",
+    "LoadingTransition",
+    "PlayCircle",
+    "BookOpen"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\TimeTable.jsx": [
+    "LoadingTransition",
+    "TimetableDashboardHeader",
+    "AlertCircle",
+    "Calendar",
+    "LiveClassTracker",
+    "MobileTimetable",
+    "X",
+    "Download",
+    "CustomCalendar"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\UnitContent.jsx": [
+    "LoadingTransition",
+    "ArrowLeft",
+    "PdfDownloadCard",
+    "ChevronDown",
+    "EmbeddedQuiz"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\src\\pages\\Welcome.jsx": [
+    "motion",
+    "Clock",
+    "Award",
+    "Shield",
+    "BookOpen",
+    "ArrowRight",
+    "AnimatePresence"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\strip_admin_app.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\strip_student_app.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\temp_update_logic.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\update_admin_create.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\update_admin_login.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\update_login.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\update_pkg.cjs": [
+    "console"
+  ],
+  "C:\\Users\\bilij\\Documents\\projects\\iiit\\update_timetable.cjs": [
+    "console"
+  ]
+}

@@ -1,0 +1,428 @@
+.mobile-timetable-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+    margin-top: 4rem;
+    margin-bottom: 2.5rem;
+}
+
+.mobile-timetable-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.mobile-timetable-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin: 0;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-timetable-divider {
+    height: 3px;
+    width: 64px;
+    background: linear-gradient(90deg, transparent, #6366f1, #818cf8, transparent);
+    border-radius: 4px;
+}
+
+.mobile-day-accordion {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+/* backdrop-filter: blur(12px); */
+/* -webkit-backdrop-filter: blur(12px); */
+    border-radius: 16px;
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-day-accordion:active {
+    transform: scale(0.97);
+}
+
+.mobile-day-accordion.expanded {
+    background: linear-gradient(145deg, rgba(49, 46, 129, 0.6) 0%, rgba(30, 41, 59, 0.9) 100%);
+    border-color: rgba(99, 102, 241, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.mobile-day-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.mobile-day-periods {
+    font-weight: 500;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-left: 0.25rem;
+}
+
+.mobile-day-content-wrapper {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out, margin-top 0.3s ease;
+}
+
+.mobile-day-content-wrapper.open {
+    max-height: 1200px; /* Large enough to fit all periods */
+    opacity: 1;
+    margin-top: 0.5rem;
+}
+
+.mobile-day-expanded {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.mobile-period-card {
+    border-radius: 16px;
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    color: #ffffff;
+    background: rgba(30, 41, 59, 0.6);
+/* backdrop-filter: blur(12px); */
+/* -webkit-backdrop-filter: blur(12px); */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-period-card:active {
+    transform: scale(0.98);
+}
+
+.mobile-period-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    border-radius: 16px;
+}
+
+.mobile-period-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+.mobile-period-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    padding: 0.25rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+/* backdrop-filter: blur(4px); */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-period-time {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.03em;
+}
+
+.mobile-period-subject-full {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.3;
+    color: #f8fafc;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.01em;
+}
+
+/* Lunch Break Card */
+.mobile-lunch-card {
+    background: #1e293b;
+    border-left: 4px solid #f59e0b;
+    border-radius: 14px;
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #f59e0b;
+    margin: 0.25rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.mobile-lunch-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
+    pointer-events: none;
+}
+
+.mobile-lunch-time {
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.9;
+    text-shadow: none;
+    margin-bottom: 0.15rem;
+    position: relative;
+    z-index: 1;
+}
+
+.mobile-lunch-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #f59e0b;
+    text-shadow: none;
+    position: relative;
+    z-index: 1;
+}
+
+/* Premium Glassmorphic Subject Gradients */
+.subject-color-0 { 
+    border-left: 4px solid #ec4899; 
+    background: linear-gradient(90deg, rgba(236,72,153,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+.subject-color-1 { 
+    border-left: 4px solid #10b981; 
+    background: linear-gradient(90deg, rgba(16,185,129,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+.subject-color-2 { 
+    border-left: 4px solid #8b5cf6; 
+    background: linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+.subject-color-3 { 
+    border-left: 4px solid #f43f5e; 
+    background: linear-gradient(90deg, rgba(244,63,94,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+.subject-color-4 { 
+    border-left: 4px solid #0ea5e9; 
+    background: linear-gradient(90deg, rgba(14,165,233,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+.subject-color-5 { 
+    border-left: 4px solid #f97316; 
+    background: linear-gradient(90deg, rgba(249,115,22,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+.subject-color-6 { 
+    border-left: 4px solid #94a3b8; 
+    background: linear-gradient(90deg, rgba(148,163,184,0.15) 0%, rgba(30,41,59,0.4) 100%);
+}
+
+.mobile-free-period {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px dashed rgba(148, 163, 184, 0.2);
+    color: #64748b;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    box-shadow: none;
+}
+.mobile-free-period .mobile-period-subject-full {
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Light Theme Overrides (Premium Redesign) */
+[data-theme='light'] .mobile-timetable-title {
+    color: #1e293b;
+    text-shadow: none;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+[data-theme='light'] .mobile-timetable-divider {
+    background: linear-gradient(90deg, transparent, #4f46e5, #8b5cf6, transparent);
+    height: 4px;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+}
+
+[data-theme='light'] .mobile-day-accordion {
+    background: rgba(255, 255, 255, 0.7);
+/* backdrop-filter: blur(16px); */
+/* -webkit-backdrop-filter: blur(16px); */
+    box-shadow: 0 8px 32px rgba(148, 163, 184, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+[data-theme='light'] .mobile-day-accordion.expanded {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 1);
+    border: 1px solid rgba(199, 210, 254, 0.8);
+}
+
+[data-theme='light'] .mobile-day-title {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+[data-theme='light'] .mobile-day-periods {
+    color: #64748b;
+}
+
+[data-theme='light'] .mobile-period-card {
+    background: #ffffff;
+    box-shadow: 0 4px 20px -2px rgba(148, 163, 184, 0.15);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='light'] .mobile-period-card:active {
+    transform: translateY(-2px) scale(0.99);
+    box-shadow: 0 8px 25px -4px rgba(148, 163, 184, 0.25);
+}
+
+[data-theme='light'] .mobile-period-card::before {
+    display: none;
+}
+
+[data-theme='light'] .mobile-period-badge {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    font-weight: 800;
+}
+
+[data-theme='light'] .mobile-period-time {
+    color: #475569;
+    font-weight: 700;
+}
+
+[data-theme='light'] .mobile-period-subject-full {
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+[data-theme='light'] .mobile-lunch-card {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-left: 5px solid #f59e0b;
+    color: #1e293b;
+    box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.2);
+    border-top: 1px solid rgba(253, 230, 138, 0.8);
+    border-right: 1px solid rgba(253, 230, 138, 0.8);
+    border-bottom: 1px solid rgba(253, 230, 138, 0.8);
+}
+
+[data-theme='light'] .mobile-lunch-time {
+    color: #92400e;
+}
+
+[data-theme='light'] .mobile-lunch-title {
+    color: #d97706;
+}
+
+[data-theme='light'] .mobile-free-period {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+}
+
+[data-theme='light'] .mobile-free-period .mobile-period-subject-full {
+    color: #64748b;
+    font-weight: 700;
+}
+
+/* Premium Pastel Themes for Subjects */
+[data-theme='light'] .subject-color-0 { 
+    background: linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%);
+    border-left: 4px solid #ec4899;
+    border-top: 1px solid #fbcfe8;
+    border-right: 1px solid #fbcfe8;
+    border-bottom: 1px solid #fbcfe8;
+}
+[data-theme='light'] .subject-color-0 .mobile-period-badge { color: #ec4899; background: #fdf2f8; border-color: #fbcfe8; }
+[data-theme='light'] .subject-color-0 .mobile-period-subject-full { color: #be185d; }
+
+[data-theme='light'] .subject-color-1 { 
+    background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+    border-left: 4px solid #10b981;
+    border-top: 1px solid #a7f3d0;
+    border-right: 1px solid #a7f3d0;
+    border-bottom: 1px solid #a7f3d0;
+}
+[data-theme='light'] .subject-color-1 .mobile-period-badge { color: #10b981; background: #ecfdf5; border-color: #a7f3d0; }
+[data-theme='light'] .subject-color-1 .mobile-period-subject-full { color: #047857; }
+
+[data-theme='light'] .subject-color-2 { 
+    background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%);
+    border-left: 4px solid #8b5cf6;
+    border-top: 1px solid #ddd6fe;
+    border-right: 1px solid #ddd6fe;
+    border-bottom: 1px solid #ddd6fe;
+}
+[data-theme='light'] .subject-color-2 .mobile-period-badge { color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe; }
+[data-theme='light'] .subject-color-2 .mobile-period-subject-full { color: #6d28d9; }
+
+[data-theme='light'] .subject-color-3 { 
+    background: linear-gradient(135deg, #fff1f2 0%, #ffffff 100%);
+    border-left: 4px solid #f43f5e;
+    border-top: 1px solid #fecdd3;
+    border-right: 1px solid #fecdd3;
+    border-bottom: 1px solid #fecdd3;
+}
+[data-theme='light'] .subject-color-3 .mobile-period-badge { color: #f43f5e; background: #fff1f2; border-color: #fecdd3; }
+[data-theme='light'] .subject-color-3 .mobile-period-subject-full { color: #be123c; }
+
+[data-theme='light'] .subject-color-4 { 
+    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+    border-left: 4px solid #0ea5e9;
+    border-top: 1px solid #bae6fd;
+    border-right: 1px solid #bae6fd;
+    border-bottom: 1px solid #bae6fd;
+}
+[data-theme='light'] .subject-color-4 .mobile-period-badge { color: #0ea5e9; background: #f0f9ff; border-color: #bae6fd; }
+[data-theme='light'] .subject-color-4 .mobile-period-subject-full { color: #0369a1; }
+
+[data-theme='light'] .subject-color-5 { 
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+    border-left: 4px solid #f97316;
+    border-top: 1px solid #fed7aa;
+    border-right: 1px solid #fed7aa;
+    border-bottom: 1px solid #fed7aa;
+}
+[data-theme='light'] .subject-color-5 .mobile-period-badge { color: #f97316; background: #fff7ed; border-color: #fed7aa; }
+[data-theme='light'] .subject-color-5 .mobile-period-subject-full { color: #c2410c; }
+
+[data-theme='light'] .subject-color-6 { 
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border-left: 4px solid #64748b;
+    border-top: 1px solid #cbd5e1;
+    border-right: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+}
+[data-theme='light'] .subject-color-6 .mobile-period-badge { color: #64748b; background: #f8fafc; border-color: #cbd5e1; }
+[data-theme='light'] .subject-color-6 .mobile-period-subject-full { color: #334155; }

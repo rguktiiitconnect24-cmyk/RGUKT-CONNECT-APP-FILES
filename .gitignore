@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Android Build Artifacts
+android/app/build/
+android/build/
+android/*/build/
+.gradle/
+*.dex
+*.apk
+*.aar
+local.properties
+
+# Capacitor
+capacitor_logs.txt
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.suo
+*.sln
+*.sw?
+
+admin-panel/

@@ -1,0 +1,153 @@
+.pdf-download-card {
+    border-radius: 16px;
+    padding: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.pdf-download-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.pdf-custom-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e53e3e; /* Red background similar to image 1 */
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(229, 62, 62, 0.3);
+}
+
+.pdf-icon-text {
+    color: white;
+    font-weight: 800;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.pdf-download-card:hover .pdf-custom-icon {
+    transform: scale(1.05) translateY(-1px);
+    box-shadow: 0 6px 14px rgba(229, 62, 62, 0.4);
+}
+
+.pdf-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    margin: 0;
+    line-height: 1.4;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pdf-subtitle {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin: 2px 0 0 0;
+}
+
+.pdf-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.pdf-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.pdf-btn:hover::after {
+    opacity: 1;
+}
+
+.pdf-btn:active {
+    transform: scale(0.95);
+}
+
+.pdf-btn.status-downloaded {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.pdf-btn.status-downloaded:hover {
+    background: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.pdf-btn.status-update {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.pdf-btn.status-update:hover {
+    background: rgba(245, 158, 11, 0.2);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.pdf-btn.status-not-downloaded {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 14px -4px rgba(99, 102, 241, 0.6);
+}
+
+.pdf-btn.status-not-downloaded:hover {
+    box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.7);
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+}
+
+.spinner-icon {
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

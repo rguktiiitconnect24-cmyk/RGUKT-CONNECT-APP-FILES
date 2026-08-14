@@ -1,0 +1,1240 @@
+﻿0:                 import React, { useState, useEffect, useMemo
+1: import { Navigate, useNavigate } from 'react-router-dom';
+2: import { useAuth } from '../../context/AuthContext';
+3: import { BookOpen, Users, FileText, Clock, Award, Calendar, 
+4: import { db, bulkUploadDb } from '../../config/firebase';
+5: import { doc, getDoc } from 'firebase/firestore';
+6: import { formatClassID, parseTimeRange, formatAttendancePerc
+7: import NoticeCard from '../../components/NoticeCard/NoticeCa
+8: import { noticeService } from '../../services/noticeService'
+9: 
+10: import './Dashboard.css';
+11: import CourseSelectionModal from '../../components/Common/Co
+12: import AttendanceBottomSheet from '../../components/Layout/A
+13: import HeaderAnimationSheet from '../../components/Dashboard
+14: import CompleteProfileModal from '../../components/Profile/C
+15: import CgpaModal from '../../components/Dashboard/CgpaModal'
+16: 
+17: const EXAM_TYPE_META = {
+18:     semester: { badge: 'SEM', color: '#a855f7', bg: 'rgba(16
+19:     mid:      { badge: 'MID', color: '#3b82f6', bg: 'rgba(59
+20:     supply:   { badge: 'SUP', color: '#f97316', bg: 'rgba(24
+21:     others:   { badge: 'REG', color: '#10b981', bg: 'rgba(16
+22: };
+23: 
+24: /* --- Reusable Components --- */
+25: const StatCard = ({ label, value, trend, trendUp, icon: Icon
+26:     <div className={`stat-card ${theme || ''}`}>
+27:         <div className="stat-card-top">
+28:             <div className={`stat-icon-box ${colorClass} bg-
+29:                 <Icon size={20} />
+30:             </div>
+31:         </div>
+32:         
+33:         <h3 className="stat-value">{value}</h3>
+34:         
+35:         <p className="stat-label">
+36:             <span className="stat-label-badge">{label}</span
+37:         </p>
+38: 
+39:         {trend && (
+40:             <div className="stat-trend-box mt-2">
+41:                 <span className={`text-[10px] font-bold px-2
+42:                     {trend} {trendUp ? <ArrowUpRight size={1
+43:                 </span>
+44:             </div>
+45:         )}
+46:     </div>
+47: );
+48: 
+49: const SectionTitle = ({ title, subtitle, action, onActionCli
+50:     <div className="section-header-premium">
+51:         <div className="section-title-wrapper-premium">
+52:             <h2 className="section-title-premium">{title}</h
+53:             {subtitle && <p className="section-subtitle-prem
+54:         </div>
+55:         {action && (
+56:             <button onClick={onActionClick} className="btn b
+57:                 {action}
+58:             </button>
+59:         )}
+60:     </div>
+61: );
+62: 
+63: const AnimatedDigit = ({ value }) => {
+64:     const [displayValue, setDisplayValue] = React.useState(v
+65:     const [prevValue, setPrevValue] = React.useState(value);
+66:     const [isAnimating, setIsAnimating] = React.useState(fal
+67: 
+68:     React.useEffect(() => {
+69:         if (value !== displayValue) {
+70:             setPrevValue(displayValue);
+71:             setDisplayValue(value);
+72:             setIsAnimating(true);
+73:             const timer = setTimeout(() => {
+74:                 setIsAnimating(false);
+75:             }, 600); // Increased for smoother feel
+76:             return () => clearTimeout(timer);
+77:         }
+78:     }, [value, displayValue]);
+79: 
+80:     if (value === ':') return <span className="timer-colon">
+81: 
+82:     return (
+83:         <span className="digit-container">
+84:             <span className={`digit-flipper ${isAnimating ? 
+85:                 <span className="digit-current">{prevValue}<
+86:                 <span className="digit-next">{displayValue}<
+87:             </span>
+88:         </span>
+89:     );
+90: };
+91: 
+92: const StudentDashboard = ({ user }) => {
+93:     const navigate = useNavigate();
+94:     const [currentTime, setCurrentTime] = React.useState(new
+95: 
+96:     const [isCourseModalOpen, setIsCourseModalOpen] = React.
+97:     const [isAttendanceSheetOpen, setIsAttendanceSheetOpen] 
+98:     const [isProfileModalOpen, setIsProfileModalOpen] = Reac
+99:     const [isCgpaModalOpen, setIsCgpaModalOpen] = React.useS
+100: 
+101:     // Sync profile completion state once background progres
+102:     React.useEffect(() => {
+103:         if (user && !user.loadingProfile) {
+104:             setIsProfileModalOpen(!user.profileCompleted);
+105:         }
+106:     }, [user?.profileCompleted, user?.loadingProfile]);
+107:     
+108:     // --- Animation Customization State ---
+109:     const defaultCardPrefs = { ongoing: true, courses: true,
+110:     const [cardPrefs, setCardPrefs] = useState(() => {
+111:         try {
+112:             const saved = localStorage.getItem('dashboard_ca
+113:             return saved ? { ...defaultCardPrefs, ...JSON.pa
+114:         } catch (e) { return defaultCardPrefs; }
+115:     });
+116: 
+117:     useEffect(() => {
+118:         const handleSettingsChange = () => {
+119:             try {
+120:                 const saved = localStorage.getItem('dashboar
+121:                 if (saved) setCardPrefs({ ...defaultCardPref
+122:             } catch (e) {}
+123:         };
+124:         window.addEventListener('dashboardSettingsChanged', 
+125:         return () => window.removeEventListener('dashboardSe
+126:     }, []);
+127: 
+128:     const [isAnimationSheetOpen, setIsAnimationSheetOpen] = 
+129:     const [selectedAnimId, setSelectedAnimId] = useState(() 
+130:         const saved = localStorage.getItem('header_border_an
+131:         const validIds = ['none', 'theme-flow', 'soft-pulse'
+132:         if (saved && validIds.includes(saved)) return saved;
+133:         return 'theme-flow';
+134:     });
+135: 
+136:     const handleSelectAnimation = (id) => {
+137:         setSelectedAnimId(id);
+138:         localStorage.setItem('header_border_anim', id);
+139:     };
+140: 
+141:     // Long Press Handler
+142:     const timerRef = useRef(null);
+143:     const handleTouchStart = () => {
+144:         timerRef.current = setTimeout(() => {
+145:             setIsAnimationSheetOpen(true);
+146:             if (navigator.vibrate) navigator.vibrate(50);
+147:         }, 600);
+148:     };
+149:     const handleTouchEnd = () => {
+150:         if (timerRef.current) clearTimeout(timerRef.current)
+151:     };
+152: 
+153:     React.useEffect(() => {
+154:         const timer = setInterval(() => setCurrentTime(new D
+155:         return () => clearInterval(timer);
+156:     }, []);
+157: 
+158:     const currentDay = currentTime.toLocaleDateString('en-US
+159:     const formattedDate = currentTime.toLocaleDateString('en
+160:         month: 'short',
+161:         day: '2-digit',
+162:         year: 'numeric'
+163:     });
+164: 
+165:     const [todaySchedule, setTodaySchedule] = React.useState
+166:     const [isTableLoading, setIsTableLoading] = React.useSta
+167:     const [todayEvents, setTodayEvents] = React.useState([])
+168: 
+169:     const [examData, setExamData] = React.useState(null);
+170: 
+171:     React.useEffect(() => {
+172:         const fetchExamData = async () => {
+173:             if (!user?.uid) return;
+174:             const cacheKey = `dashboard_exam_schedule_${user
+175:             const cached = sessionStorage.getItem(cacheKey);
+176:             if (cached) {
+177:                 setExamData(JSON.parse(cached));
+178:                 return;
+179:             }
+180:             try {
+181:                 const docSnap = await getDoc(doc(db, 'settin
+182:                 if (docSnap.exists()) {
+183:                     const data = docSnap.data();
+184:                     setExamData(data);
+185:                     sessionStorage.setItem(cacheKey, JSON.st
+186:                 }
+187:             } catch (error) {
+188:                 console.error("Error fetching exams:", error
+189:             }
+190:         };
+191:         fetchExamData();
+192:     }, [user?.uid]);
+193: 
+194:     const [attendanceRate, setAttendanceRate] = React.useSta
+195:     const [currentCgpa, setCurrentCgpa] = React.useState('0.
+196:     const [currentCgpaRecord, setCurrentCgpaRecord] = React.
+197:     
+198:     const [latestNotices, setLatestNotices] = React.useState
+199:     const [noticeInteractions, setNoticeInteractions] = Reac
+200: 
+201:     React.useEffect(() => {
+202:         const fetchNotices = async () => {
+203:             if (user) {
+204:                 const cacheKeyNotices = `dash_notices_${user
+205:                 const cacheKeyInter = `dash_inter_${user.uid
+206:                 
+207:                 const cachedN = sessionStorage.getItem(cache
+208:                 const cachedI = sessionStorage.getItem(cache
+209:                 
+210:                 if (cachedN && cachedI) {
+211:                     setLatestNotices(JSON.parse(cachedN));
+212:                     setNoticeInteractions(JSON.parse(cachedI
+213:                     return;
+214:                 }
+215: 
+216:                 try {
+217:                     const fetchedNotices = await noticeServi
+218:                     const interactions = await noticeService
+219:                     
+220:                     const topNotices = fetchedNotices.slice(
+221:                     setLatestNotices(topNotices);
+222:                     setNoticeInteractions(interactions);
+223:                     
+224:                     sessionStorage.setItem(cacheKeyNotices, 
+225:                     sessionStorage.setItem(cacheKeyInter, JS
+226:                 } catch (e) {
+227:                     console.error("Failed to fetch dashboard
+228:                 }
+229:             }
+230:         };
+231:         fetchNotices();
+232:     }, [user]);
+233: 
+234:     React.useEffect(() => {
+235:         const fetchAttendance = async () => {
+236:             if (!user?.studentId) {
+237:                 setAttendanceRate('0%');
+238:                 return;
+239:             }
+240:             try {
+241:                 const id = user.studentId.toUpperCase().repl
+242:                 const docSnap = await getDoc(doc(bulkUploadD
+243:                 if (docSnap.exists()) {
+244:                     setAttendanceRate(formatAttendancePercen
+245:                 } else {
+246:                     setAttendanceRate('0%');
+247:                 }
+248:             } catch (error) {
+249:                 console.error("Error fetching attendance:", 
+250:                 setAttendanceRate('0%');
+251:             }
+252:         };
+253:         fetchAttendance();
+254:     }, [user?.studentId]);
+255: 
+256:     React.useEffect(() => {
+257:         const fetchCgpa = async () => {
+258:             if (!user?.studentId) {
+259:                 setCurrentCgpa('0.00');
+260:                 return;
+261:             }
+262:             try {
+263:                 const id = user.studentId.toUpperCase().repl
+264:                 const docSnap = await getDoc(doc(bulkUploadD
+265:                 if (docSnap.exists()) {
+266:                     const data = docSnap.data();
+267:                     setCurrentCgpa(data.cgpa || '0.00');
+268:                     setCurrentCgpaRecord(data);
+269:                 } else {
+270:                     setCurrentCgpa('0.00');
+271:                     setCurrentCgpaRecord(null);
+272:                 }
+273:             } catch (error) {
+274:                 console.error("Error fetching cgpa:", error)
+275:                 setCurrentCgpa('0.00');
+276:     return (
+277:         <span className="digit-container">
+278:             <span className={`digit-flipper ${isAnimating ? 
+279:                 <span className="digit-current">{prevValue}<
+280:                 <span className="digit-next">{displayValue}<
+281:             </span>
+282:         </span>
+283:     );
+284: };
+285: 
+286: const StudentDashboard = ({ user }) => {
+287:     const navigate = useNavigate();
+288:     const [currentTime, setCurrentTime] = React.useState(new
+289: 
+290:     const [isCourseModalOpen, setIsCourseModalOpen] = React.
+291:     const [isAttendanceSheetOpen, setIsAttendanceSheetOpen] 
+292:     const [isProfileModalOpen, setIsProfileModalOpen] = Reac
+293:     const [isCgpaModalOpen, setIsCgpaModalOpen] = React.useS
+294: 
+295:     // Sync profile completion state once background progres
+296:     React.useEffect(() => {
+297:         if (user && !user.loadingProfile) {
+298:             setIsProfileModalOpen(!user.profileCompleted);
+299:         }
+300:     }, [user?.profileCompleted, user?.loadingProfile]);
+301:     
+302:     // --- Animation Customization State ---
+303:     const defaultCardPrefs = { ongoing: true, courses: true,
+304:     const [cardPrefs, setCardPrefs] = useState(() => {
+305:         try {
+306:             const saved = localStorage.getItem('dashboard_ca
+307:             return saved ? { ...defaultCardPrefs, ...JSON.pa
+308:         } catch (e) { return defaultCardPrefs; }
+309:     });
+310: 
+311:     useEffect(() => {
+312:         const handleSettingsChange = () => {
+313:             try {
+314:                 const saved = localStorage.getItem('dashboar
+315:                 if (saved) setCardPrefs({ ...defaultCardPref
+316:             } catch (e) {}
+317:         };
+318:         window.addEventListener('dashboardSettingsChanged', 
+319:         return () => window.removeEventListener('dashboardSe
+320:     }, []);
+321: 
+322:     const [isAnimationSheetOpen, setIsAnimationSheetOpen] = 
+323:     const [selectedAnimId, setSelectedAnimId] = useState(() 
+324:         const saved = localStorage.getItem('header_border_an
+325:         const validIds = ['none', 'theme-flow', 'soft-pulse'
+326:         if (saved && validIds.includes(saved)) return saved;
+327:         return 'theme-flow';
+328:     });
+329: 
+330:     const handleSelectAnimation = (id) => {
+331:         setSelectedAnimId(id);
+332:         localStorage.setItem('header_border_anim', id);
+333:     };
+334: 
+335:     // Long Press Handler
+336:     const timerRef = useRef(null);
+337:     const handleTouchStart = () => {
+338:         timerRef.current = setTimeout(() => {
+339:             setIsAnimationSheetOpen(true);
+340:             if (navigator.vibrate) navigator.vibrate(50);
+341:         }, 600);
+342:     };
+343:     const handleTouchEnd = () => {
+344:         if (timerRef.current) clearTimeout(timerRef.current)
+345:     };
+346: 
+347:     React.useEffect(() => {
+348:         const timer = setInterval(() => setCurrentTime(new D
+349:         return () => clearInterval(timer);
+350:     }, []);
+351: 
+352:     const currentDay = currentTime.toLocaleDateString('en-US
+353:     const formattedDate = currentTime.toLocaleDateString('en
+354:         month: 'short',
+355:         day: '2-digit',
+356:         year: 'numeric'
+357:     });
+358: 
+359:     const [todaySchedule, setTodaySchedule] = React.useState
+360:     const [isTableLoading, setIsTableLoading] = React.useSta
+361:     const [todayEvents, setTodayEvents] = React.useState([])
+362: 
+363:     const [examData, setExamData] = React.useState(null);
+364: 
+365:     React.useEffect(() => {
+366:         const fetchExamData = async () => {
+367:             if (!user?.uid) return;
+368:             const cacheKey = `dashboard_exam_schedule_${user
+369:             const cached = sessionStorage.getItem(cacheKey);
+370:             if (cached) {
+371:                 setExamData(JSON.parse(cached));
+372:                 return;
+373:             }
+374:             try {
+375:                 const docSnap = await getDoc(doc(db, 'settin
+376:                 if (docSnap.exists()) {
+377:                     const data = docSnap.data();
+378:                     setExamData(data);
+379:                     sessionStorage.setItem(cacheKey, JSON.st
+380:                 }
+381:             } catch (error) {
+382:                 console.error("Error fetching exams:", error
+383:             }
+384:         };
+385:         fetchExamData();
+386:     }, [user?.uid]);
+387: 
+388:     const [attendanceRate, setAttendanceRate] = React.useSta
+389:     const [currentCgpa, setCurrentCgpa] = React.useState('0.
+390:     const [currentCgpaRecord, setCurrentCgpaRecord] = React.
+391:     
+392:     const [latestNotices, setLatestNotices] = React.useState
+393:     const [noticeInteractions, setNoticeInteractions] = Reac
+394: 
+395:     React.useEffect(() => {
+396:         const fetchNotices = async () => {
+397:             if (user) {
+398:                 const cacheKeyNotices = `dash_notices_${user
+399:                 const cacheKeyInter = `dash_inter_${user.uid
+400:                 
+401:                 const cachedN = sessionStorage.getItem(cache
+402:                 const cachedI = sessionStorage.getItem(cache
+403:                 
+404:                 if (cachedN && cachedI) {
+405:                     setLatestNotices(JSON.parse(cachedN));
+406:                     setNoticeInteractions(JSON.parse(cachedI
+407:                     return;
+408:                 }
+409: 
+410:                 try {
+411:                     const fetchedNotices = await noticeServi
+412:                     const interactions = await noticeService
+413:                     
+414:                     const topNotices = fetchedNotices.slice(
+415:                     setLatestNotices(topNotices);
+416:                     setNoticeInteractions(interactions);
+417:                     
+418:                     sessionStorage.setItem(cacheKeyNotices, 
+419:                     sessionStorage.setItem(cacheKeyInter, JS
+420:                 } catch (e) {
+421:                     console.error("Failed to fetch dashboard
+422:                 }
+423:             }
+424:         };
+425:         fetchNotices();
+426:     }, [user]);
+427: 
+428:     React.useEffect(() => {
+429:         const fetchAttendance = async () => {
+430:             if (!user?.studentId) {
+431:                 setAttendanceRate('0%');
+432:                 return;
+433:             }
+434:             try {
+435:                 const id = user.studentId.toUpperCase().repl
+436:                 const docSnap = await getDoc(doc(bulkUploadD
+437:                 if (docSnap.exists()) {
+438:                     setAttendanceRate(formatAttendancePercen
+439:                 } else {
+440:                     setAttendanceRate('0%');
+441:                 }
+442:             } catch (error) {
+443:                 console.error("Error fetching attendance:", 
+444:                 setAttendanceRate('0%');
+445:             }
+446:         };
+447:         fetchAttendance();
+448:     }, [user?.studentId]);
+449: 
+450:     React.useEffect(() => {
+451:         const fetchCgpa = async () => {
+452:             if (!user?.studentId) {
+453:                 setCurrentCgpa('0.00');
+454:                 return;
+455:             }
+456:             try {
+457:                 const id = user.studentId.toUpperCase().repl
+458:                 const docSnap = await getDoc(doc(bulkUploadD
+459:                 if (docSnap.exists()) {
+460:                     const data = docSnap.data();
+461:                     setCurrentCgpa(data.cgpa || '0.00');
+462:                     setCurrentCgpaRecord(data);
+463:                 } else {
+464:                     setCurrentCgpa('0.00');
+465:                     setCurrentCgpaRecord(null);
+466:                 }
+467:             } catch (error) {
+468:                 console.error("Error fetching cgpa:", error)
+469:                 setCurrentCgpa('0.00');
+470:             }
+471:         };
+472:         fetchCgpa();
+473:     }, [user?.studentId]);
+474: 
+475:     React.useEffect(() => {
+476:         const fetchEvents = () => {
+477:             const saved = localStorage.getItem('student_cale
+478:             const events = saved ? JSON.parse(saved) : [];
+479:             const todayStr = new Date().toISOString().split(
+480:             setTodayEvents(events.filter(e => e.date === tod
+481:         };
+482:         fetchEvents();
+483:         window.addEventListener('storage', fetchEvents);
+484:         return () => window.removeEventListener('storage', f
+485:     }, [user?.uid]);
+486: 
+487:     React.useEffect(() => {
+488:         const fetchTodaySchedule = async () => {
+489:             if (!user?.uid) return;
+490:             setIsTableLoading(true);
+491:             const cacheKey = `dashboard_schedule_${user.uid}
+492:             const cached = sessionStorage.getItem(cacheKey);
+493:             if (cached && JSON.parse(cached) !== null && JSO
+494:                 setTodaySchedule(JSON.parse(cached));
+495:                 setIsTableLoading(false);
+496:                 return;
+497:             }
+498: 
+499:             let cls = user?.currentClass || '';
+500: 
+501:             if (!cls && user?.studentId) {
+502:                 try {
+503:                     const docSnap = await getDoc(doc(db, "st
+504:                     if (docSnap.exists()) {
+505:                         const raw = docSnap.data();
+506:                         cls = raw.classSection || raw.curren
+507:                     }
+508:                 } catch (e) {
+509:                     console.error("Proactive dashboard fetch
+510:                 }
+511:             }
+512: 
+513:             if (!cls) {
+514:                 setIsTableLoading(false);
+515:                 return;
+516:             }
+517:             try {
+518:                 let docSnap = { exists: () => false };
+519:                 let docRef = null;
+520:                 const branch = user?.department || user?.bra
+521:                 let section = cls;
+522:                 
+523:                 // Extract section character (e.g. "Section 
+524:                 if (section.toLowerCase().includes('section'
+525:                     section = section.replace(/section\s*/i,
+526:                 }
+527:                 
+528:                 if (['CSE(AI&ML)', 'CSC (AI&ML)', 'AIML'].in
+529:                     section = 'AIML';
+530:                 }
+531:                 
+532:                 let branchUpper = ['AIML', 'AI&ML', 'CSE(AI&
+533:                 if (section === 'AIML') branchUpper = 'CSE(A
+534: 
+535:                 if (branchUpper && section) {
+536:                     try {
+537:                         docRef = doc(db, "timetables", branc
+538:                         docSnap = await getDoc(docRef);
+539:                     } catch(e) {
+540:                         console.error("Error reading branch/
+541:                     }
+542:                 }
+543: 
+544:                 // Fallback to legacy format if new structur
+545:                 if (!docSnap.exists() && branchUpper && sect
+546:                     const legacyVariant = section === 'AIML'
+547:                     try {
+548:                         const vRef = doc(db, "timetable", le
+549:                         const vSnap = await getDoc(vRef);
+550:                         if (vSnap.exists()) {
+551:                             docSnap = vSnap;
+552:                             console.log("Matched legacy time
+553:                         }
+554:                     } catch(e) {}
+555:                 }
+556: 
+557:                 if (docSnap.exists()) {
+558:                     const fullSchedule = docSnap.data();
+559:                     const daySchedule = fullSchedule[current
+560:                     setTodaySchedule(daySchedule);
+561:                     sessionStorage.setItem(cacheKey, JSON.st
+562:                 } else {
+563:                     setTodaySchedule(null);
+564:                     sessionStorage.setItem(cacheKey, JSON.st
+565:                 }
+566:             } catch (error) {
+567:                 console.error("Error fetching today schedule
+568:             } finally {
+569:                 setIsTableLoading(false);
+570:             }
+571:         };
+572: 
+573:         fetchTodaySchedule();
+574:     }, [user?.currentClass, user?.studentId, currentDay]);
+575: 
+576:     const subjectMapping = {
+577:         'M': 'Mathematics',
+578:         'P': 'Physics',
+579:         'C': 'Chemistry',
+580:         'E': 'English',
+581:         'IT': 'Info Technology',
+582:         'B': 'Biology',
+583:         'T': 'Telugu',
+584:         'MT': 'Math Tutorial',
+585:         'PT': 'Physics Tutorial',
+586:         'CT': 'Chemistry Tutorial',
+587:         'ET': 'English Tutorial',
+588:         'CL': 'Chemistry Lab',
+589:         'PL': 'Physics Lab',
+590:         'BL': 'Biology Lab',
+591:         'ITL': 'IT Lab',
+592:         'Free': 'Free Period',
+593:         '-': 'Free Period'
+594:     };
+595: 
+596:     const getFullSubjectName = (code) => subjectMapping[code
+597: 
+598:     // Timeline Configuration
+599:     const timeline = [
+600:         { start: '08:30', end: '09:30', label: 'P1', type: '
+601:         { start: '09:30', end: '10:30', label: 'P2', type: '
+602:         { start: '10:30', end: '10:40', label: 'SB', type: '
+603:         { start: '10:40', end: '11:40', label: 'P3', type: '
+604:         { start: '11:40', end: '12:40', label: 'P4', type: '
+605:         { start: '12:40', end: '13:40', label: 'LB', type: '
+606:         { start: '13:40', end: '14:40', label: 'P5', type: '
+607:         { start: '14:40', end: '15:40', label: 'P6', type: '
+608:         { start: '15:40', end: '15:50', label: 'SB', type: '
+609:         { start: '15:50', end: '16:50', label: 'P7', type: '
+610:     ];
+611: 
+612:     const getCurrentStatus = () => {
+613:         const now = currentTime;
+614:         const isWeekend = currentDay === 'Sunday';
+615: 
+616:         // 1. Check for Exams First (Higher Priority)
+617:         if (examData) {
+618:             const todayStr = currentTime.toLocaleDateString(
+619:             const allExams = [];
+620:             
+621:             if (examData.schedules && Array.isArray(examData
+622:                 examData.schedules.forEach(s => {
+623:                     if (s.isVisible && s.exams) allExams.pus
+624:                 });
+625:             } else if (examData.exams) {
+626:                 allExams.push(...examData.exams);
+627:             }
+628: 
+629:             const todayExam = allExams.find(e => e.date === 
+630: 
+631:             if (todayExam) {
+632:                 const range = parseTimeRange(todayExam.time,
+633:                 if (range) {
+634:                     if (now >= range.start && now < range.en
+635:                         // EXAM IS ONGOING
+636:                         const diff = range.end - now;
+637:                         const mins = Math.floor(diff / 1000 
+638:                         const secs = Math.floor((diff / 1000
+639:                         return {
+640:                             label: 'EXAM ONGOING',
+641:                             sub: todayExam.subject,
+642:                             time: `${mins}:${secs.toString()
+643:                             timeLabel: 'remaining',
+644:                             active: true,
+645:                             isExam: true
+646:                         };
+647:                     } else if (now < range.start) {
+648:                         // EXAM IS UPCOMING TODAY
+649:                         return {
+650:                             label: 'UPCOMING EXAM',
+651:                             sub: todayExam.subject,
+652:                             time: todayExam.time.split('-')[
+653:                             timeLabel: 'starts at',
+654:                             isExam: true
+655:                         }
+656:                     }
+657:                 }
+658:             }
+659:         }
+660: 
+661:         // 2. Fallback to Regular Class Timetable
+662:         if (isWeekend) return { label: 'Weekend', sub: 'Enjo
+663: 
+664:         for (const slot of timeline) {
+665:             const [sH, sM] = slot.start.split(':').map(Numbe
+666:             const [eH, eM] = slot.end.split(':').map(Number)
+667: 
+668:             const start = new Date(now);
+669:             start.setHours(sH, sM, 0, 0);
+670: 
+671:             const end = new Date(now);
+672:             end.setHours(eH, eM, 0, 0);
+673: 
+674:             if (now >= start && now < end) {
+675:                 let label = slot.label;
+676:                 let sub = '';
+677: 
+678:                 if (slot.type === 'period' && todaySchedule)
+679:                     const code = todaySchedule[slot.index];
+680:                     if (code) {
+681:                         sub = getFullSubjectName(code);
+682:                     }
+683:                 } else if (slot.type === 'break') {
+684:                     sub = slot.label === 'SB' ? 'SHORT BREAK
+685:                 }
+686: 
+687:                 // Calculate remaining time
+688:                 const diff = end - now;
+689:                 const mins = Math.floor(diff / 1000 / 60);
+690:                 const secs = Math.floor((diff / 1000) % 60);
+691:                 const timerStr = `${mins}:${secs.toString().
+692:                 const timerLabel = `remaining`;
+693: 
+694:                 return { label, sub, time: timerStr, timeLab
+695:             }
+696:         }
+697: 
+698:         const firstStart = new Date(now).setHours(8, 30, 0, 
+699:         if (now < firstStart) return { label: 'Ready?', sub:
+700: 
+701:         return { label: 'Done', sub: 'No more classes today'
+702:     };
+703: 
+704:     const getGreeting = () => {
+705:         const hour = currentTime.getHours();
+706:         if (hour >= 5 && hour < 12) return 'Good Morning';
+707:         if (hour >= 12 && hour < 17) return 'Good Afternoon'
+708:         if (hour >= 17 && hour < 21) return 'Good Evening';
+709:         return 'Good Night';
+710:     };
+711: 
+712:     const currentStatus = getCurrentStatus();
+713: 
+714:     const timeSlots = [
+715:         '08:30 AM - 09:30 AM',
+716:         '09:30 AM - 10:30 AM',
+717:         '10:40 AM - 11:40 AM',
+718:         '11:40 AM - 12:40 PM',
+719:         '01:40 PM - 02:40 PM',
+720:         '02:40 PM - 03:40 PM',
+721:         '03:50 PM - 04:50 PM'
+722:     ];
+723: 
+724:     const renderSchedule = () => {
+725:         if (isTableLoading) {
+726:             return (
+727:                 <div className="p-8 text-center">
+728:                     <div className="animate-spin w-6 h-6 bor
+729:                     <p className="text-xs text-[var(--color-
+730:                 </div>
+731:             );
+732:         }
+733: 
+734:         const isSriramanavami = currentTime.getMonth() === 2
+735: 
+736:         if (isSriramanavami) {
+737:             return (
+738:                 <div className="schedule-holiday-box animate
+739:                     <h3 className="holiday-title">Happy Srir
+740:                     <p className="holiday-subtitle">Today is
+741:                 </div>
+742:             );
+743:         }
+744: 
+745:         if (currentDay === 'Sunday') {
+746:             return (
+747:                 <div className="schedule-sunday-empty animat
+748:                     <div className="sunday-icon-box">
+749:                         <span className="material-symbols-ou
+750:                             flights_and_hotels
+751:                         </span>
+752:                     </div>
+753:                     <h3>I'm Off Today!</h3>
+754:                     <p>Timetable says: ΓÇ£See you tomorrow, I'
+755:                 </div>
+756:             );
+757:         }
+758: 
+759:         if (!todaySchedule || todaySchedule.length === 0) {
+760:             return (
+761:                 <div className="schedule-empty">
+762:                     <Calendar size={48} className="empty-ico
+763:                     <p>No classes scheduled for today.</p>
+764:                 </div>
+765:             );
+766:         }
+767: 
+768:         const items = [];
+769:         // P1 - P2
+770:         todaySchedule.slice(0, 2).forEach((subject, idx) => 
+771:             const isFree = subject === 'Free' || subject ===
+772:             items.push(
+773:                 <div key={`p${idx + 1}`} className={`schedul
+774:                     <div className="period-badge">P{idx + 1}
+775:                     <div className="item-details">
+776:                         <div className="item-subject">{getFu
+777:                         <div className="item-time">{timeSlot
+778:                     </div>
+779:                 </div>
+780:             );
+781:         });
+782: 
+783:         // Short Break 1
+784:         items.push(
+785:             <div key="break1" className="schedule-item break
+786:                 <div className="period-badge">B</div>
+787:                 <div className="item-details">
+788:                     <div className="item-subject">Short Brea
+789:                     <div className="item-time">10:30 AM - 10
+790:                 </div>
+791:             </div>
+792:         );
+793: 
+794:         // P3 - P4
+795:         todaySchedule.slice(2, 4).forEach((subject, idx) => 
+796:             const isFree = subject === 'Free' || subject ===
+797:             items.push(
+798:                 <div key={`p${idx + 3}`} className={`schedul
+799:                     <div className="period-badge">P{idx + 3}
+800:                     <div className="item-details">
+801:                         <div className="item-subject">{getFu
+802:                         <div className="item-time">{timeSlot
+803:                     </div>
+804:                 </div>
+805:             );
+806:         });
+807: 
+808:         // Lunch Break
+809:         items.push(
+810:             <div key="lunch" className="schedule-item lunch-
+811:                 <div className="period-badge">L</div>
+812:                 <div className="item-details">
+813:                     <div className="item-subject">Lunch Brea
+814:                     <div className="item-time">12:40 PM - 01
+815:                 </div>
+816:             </div>
+817:         );
+818: 
+819:         // P5 - P6
+820:         todaySchedule.slice(4, 6).forEach((subject, idx) => 
+821:             const isFree = subject === 'Free' || subject ===
+822:             items.push(
+823:                 <div key={`p${idx + 5}`} className={`schedul
+824:                     <div className="period-badge">P{idx + 5}
+825:                     <div className="item-details">
+826:                         <div className="item-subject">{getFu
+827:                         <div className="item-time">{timeSlot
+828:                     </div>
+829:                 </div>
+830:             );
+831:         });
+832: 
+833:         // Short Break 2
+834:         items.push(
+835:             <div key="break2" className="schedule-item break
+836:                 <div className="period-badge">B</div>
+837:                 <div className="item-details">
+838:                     <div className="item-subject">Short Brea
+839:                     <div className="item-time">03:40 PM - 03
+840:                 </div>
+841:             </div>
+842:         );
+843: 
+844:         // P7
+845:         if (todaySchedule[6]) {
+846:             const subject = todaySchedule[6];
+847:             const isFree = subject === 'Free' || subject ===
+848:             items.push(
+849:                 <div key="p7" className={`schedule-item ${is
+850:                     <div className="period-badge">P7</div>
+851:                     <div className="item-details">
+852:                         <div className="item-subject">{getFu
+853:                         <div className="item-time">{timeSlot
+854:                     </div>
+855:                 </div>
+856:             );
+857:         }
+858: 
+859:         return items;
+860:     };
+861: 
+862:     return (
+863:         <div className="animate-fade-in dashboard-container"
+864:             {/* Mandatory Profile Setup Modal */}
+865:             <CompleteProfileModal 
+866:                 isOpen={isProfileModalOpen} 
+867:                 user={user} 
+868:             />
+869: 
+870:             {isAttendanceSheetOpen && (
+871:                 <AttendanceBottomSheet 
+872:                     isOpen={isAttendanceSheetOpen}
+873:                     onClose={() => setIsAttendanceSheetOpen(
+874:                     user={user}
+875:                 />
+876:             )}
+877: 
+878:             <CgpaModal 
+879:                 isOpen={isCgpaModalOpen}
+880:                 onClose={() => setIsCgpaModalOpen(false)}
+881:                 cgpaValue={currentCgpa}
+882:                 cgpaRecord={currentCgpaRecord}
+883:                 studentId={user?.studentId}
+884:                 user={user}
+885:             />
+886: 
+887:             <CourseSelectionModal 
+888:                 isOpen={isCourseModalOpen}
+889:                 onClose={() => setIsCourseModalOpen(false)}
+890:             />
+891: 
+892:             {/* Animation Customization Sheet */}
+893:             <HeaderAnimationSheet 
+894:                 isOpen={isAnimationSheetOpen}
+895:                 onClose={() => setIsAnimationSheetOpen(false
+896:                 currentId={selectedAnimId}
+897:                 onSelect={handleSelectAnimation}
+898:             />
+899: 
+900:             <main className="dashboard-main scrollbar-hide">
+901:             {user.loadingProfile ? (
+902:                 <div className="flex flex-col items-center j
+903:                     <div className="animate-spin w-10 h-10 b
+904:                     <p className="text-sm font-bold text-[va
+905:                 </div>
+906:             ) : (
+907:                 <>
+908:             {/* Premium Animated Welcome Header */}
+909:             <header 
+910:                 className={`dashboard-header-animated anim-$
+911:                 onMouseDown={handleTouchStart}
+912:                 onMouseUp={handleTouchEnd}
+913:                 onMouseLeave={handleTouchEnd}
+914:                 onTouchStart={handleTouchStart}
+915:                 onTouchEnd={handleTouchEnd}
+916:                 onContextMenu={(e) => e.preventDefault()}
+917:                 title="Long press to customize animation"
+918:             >
+919:                 <div className="border-animation-container">
+920:                     <svg className="header-border-svg" width
+921:                         <defs>
+922:                             <linearGradient id="theme-gradie
+923:                                 <stop offset="0%" stopColor=
+924:                                 <stop offset="50%" stopColor
+925:                                 <stop offset="100%" stopColo
+926:                             </linearGradient>
+927:                             <linearGradient id="wave-gradien
+928:                                 <stop offset="0%" stopColor=
+929:                                 <stop offset="50%" stopColor
+930:                                 <stop offset="100%" stopColo
+931:                             </linearGradient>
+932:                             <linearGradient id="streak-gradi
+933:                                 <stop offset="0%" stopColor=
+934:                                 <stop offset="50%" stopColor
+935:                                 <stop offset="100%" stopColo
+936:                             </linearGradient>
+937:                         </defs>
+938:                         {/* Static Border */}
+939:                         <rect 
+940:                             className="border-base"
+941:                             x="1" y="1" 
+942:                             width="calc(100% - 2px)" 
+943:                             height="calc(100% - 2px)" 
+944:                             rx="28" ry="28"
+945:                             pathLength="100"
+946:                         />
+947:                         {/* Moving Streak */}
+948:                         <rect 
+949:                             className={`border-streak dynami
+950:                             x="1" y="1" 
+951:                             width="calc(100% - 2px)" 
+952:                             height="calc(100% - 2px)" 
+953:                             rx="28" ry="28"
+954:                             pathLength="100"
+955:                         />
+956:                     </svg>
+957:                 </div>
+958: 
+959:                 <div className="header-content-premium">
+960:                     <div className="header-left-box">
+961:                         <span className="welcome-label">WELC
+962:                         <h1 className="student-name-premium 
+963:                     </div>
+964:                     {user.studentId && (
+965:                         <div className="student-id-pill-new"
+966:                             {user.studentId?.replace(/^RGUKT
+967:                         </div>
+968:                     )}
+969:                 </div>
+970:             </header>
+971: 
+972:             {/* Stats Grid */}
+973:             {Object.values(cardPrefs).some(Boolean) && (
+974:             <div className="stats-grid">
+975:                 {cardPrefs.ongoing && (
+976:                 <div className={`stat-card ongoing-card ${cu
+977:                     <div className="stat-card-top">
+978:                         <div className={`stat-icon-box ${cur
+979:                             <Orbit size={20} className={curr
+980:                         </div>
+981:                     </div>
+982:                     
+983:                     <div className="ongoing-label">
+984:                         <span className="ongoing-period-badg
+985:                         {currentStatus.active && <span class
+986:                     </div>
+987:                     <h4 className="ongoing-subject">
+988:                         <span className="ongoing-subject-bad
+989:                     </h4>
+990: 
+991:                     <div className="ongoing-timer-container"
+992:                         <div className="ongoing-timer bungee
+993:                             {currentStatus.time?.split('').m
+994:                                 <AnimatedDigit key={index} v
+995:                             )) || '--:--'}
+996:                         </div>
+997:                         {currentStatus.timeLabel && (
+998:                             <div className="timer-label-wrap
+999:                                 <span className="timer-label
+1000:                             </div>
+1001:                         )}
+1002:                     </div>
+1003:                 </div>
+1004:                 )}
+1005:                 {cardPrefs.courses && (
+1006:                 <div onClick={() => setIsCourseModalOpen(tru
+1007:                     <StatCard icon={BookOpen} label="Registe
+1008:                 </div>
+1009:                 )}
+1010:                 {cardPrefs.attendance && (
+1011:                 <div onClick={() => setIsAttendanceSheetOpen
+1012:                     <StatCard icon={Clock} label="Attendance
+1013:                 </div>
+1014:                 )}
+1015:                 {cardPrefs.cgpa && (
+1016:                 <div onClick={() => setIsCgpaModalOpen(true)
+1017:                     <StatCard icon={Award} label="Current CG
+1018:                 </div>
+1019:                 )}
+1020:                 {cardPrefs.support && (
+1021:                 <div onClick={() => navigate('/complaints')}
+1022:                     <StatCard icon={MessageSquare} label="Su
+1023:                 </div>
+1024:                 )}
+1025:             </div>
+1026:             )}
+1027: 
+1028:             <div className="grid grid-cols-1 gap-8">
+1029:                 {/* Main Column */}
+1030:                 <div className="flex flex-col gap-4">
+1031:                     
+1032:                     {latestNotices.length > 0 && (
+1033:                         <section className="animate-fade-in 
+1034:                             <SectionTitle title="Latest Noti
+1035:                             <div className="flex flex-col ga
+1036:                                 {latestNotices.map(notice =>
+1037:                                     <NoticeCard 
+1038:                                         key={notice.id} 
+1039:                                         notice={notice} 
+1040:                                         isRead={noticeIntera
+1041:                                     />
+1042:                                 ))}
+1043:                             </div>
+1044:                         </section>
+1045:                     )}
+1046: 
+1047:                     {/* CASE 1: Tasks exist -> Show ABOVE Sc
+1048:                     {todayEvents.length > 0 && (
+1049:                         <section className="animate-fade-in"
+1050:                             <SectionTitle title="Today's Tas
+1051:                             <div className="calendar-events-
+1052:                                 {todayEvents.map(event => (
+1053:                                     <div key={event.id} clas
+1054:                                         <div className="even
+1055:                                             <Clock size={12}
+1056:                                             {event.time || '
+1057:                                         </div>
+1058:                                         <div className="even
+1059:                                             <h4>{event.title
+1060:                                             <span className=
+1061:                                         </div>
+1062:                                     </div>
+1063:                                 ))}
+1064:                             </div>
+1065:                         </section>
+1066:                     )}
+1067: 
+1068:                     <section>
+1069:                         <SectionTitle title="Schedule" subti
+1070:                         <div className="schedule-card">
+1071:                             <div className="schedule-list">
+1072:                                 {renderSchedule()}
+1073:                             </div>
+1074:                             <div className="schedule-footer"
+1075:                                 <button 
+1076:                                     onClick={() => navigate(
+1077:                                     className="btn btn-ghost
+1078:                                 >
+1079:                                     Full Time Table
+1080:                                 </button>
+1081:                             </div>
+1082:                         </div>
+1083:                     </section>
+1084: 
+1085: 
+1086:                     {examData && (
+1087:                         <div className="flex flex-col gap-10
+1088:                             {/* New Array Format */}
+1089:                             {examData.schedules && Array.isA
+1090:                                 examData.schedules.map((sche
+1091:                                     const typeMeta = EXAM_TY
+1092:                                     const TypeIcon = typeMet
+1093:                                     return (
+1094:                                     <section key={schedule.i
+1095:                                         <div className="sect
+1096:                                             <div>
+1097:                                                 <div style={
+1098:                                                     <span st
+1099:                                                         disp
+1100:                                                         padd
+1101:                                                         back
+1102:                                                         font
+1103:                                                     }}>
+1104:                                                         <Typ
+1105:                                                         {typ
+1106:                                                     </span>
+1107:                                                     <h2 styl
+1108:                                                         {sch
+1109:                                                     </h2>
+1110:                                                 </div>
+1111:                                                 {schedule.su
+1112:                                                     <p style
+1113:                                                         {sch
+1114:                                                     </p>
+1115:                                                 )}
+1116:                                             </div>
+1117:                                         </div>
+1118:                                         <div className="sche
+1119:                                             <div className="
+1120:                                                 {schedule.ex
+1121:                                                     <div key
+1122:                                                         <div
+1123:                                                             
+1124:                                                             
+1125:                                                             
+1126:                                                             
+1127:                                                             
+1128:                                                             
+1129:                                                             
+1130:                                                             
+1131:                                                             
+1132:                                                             
+1133:                                                             
+1134:                                                             
+1135:                                                             
+1136:                                                             
+1137:                                                             
+1138:                                                             
+1139:                                                             
+1140:                                                             
+1141:                                                         </di
+1142:                                                     </div>
+1143:                                                 ))}
+1144:                                             </div>
+1145:                                         </div>
+1146:                                     </section>
+1147:                                     );
+1148:                                 })())
+1149:                             ) : (
+1150:                                 /* Legacy Single Object Form
+1151:                                 examData.isVisible && examDa
+1152:                                     <section className="anim
+1153:                                         <SectionTitle title=
+1154:                                         <div className="sche
+1155:                                             <div className="
+1156:                                                 {examData.ex
+1157:                                                     <div key
+1158:                                                         <div
+1159:                                                             
+1160:                                                             
+1161:                                                             
+1162:                                                             
+1163:                                                             
+1164:                                                             
+1165:                                                             
+1166:                                                             
+1167:                                                             
+1168:                                                             
+1169:                                                             
+1170:                                                             
+1171:                                                             
+1172:                                                             
+1173:                                                             
+1174:                                                             
+1175:                                                             
+1176:                                                             
+1177:                                                         </di
+1178:                                                     </div>
+1179:                                                 ))}
+1180:                                             </div>
+1181:                                         </div>
+1182:                                     </section>
+1183:                                 )
+1184:                             )}
+1185:                         </div>
+1186:                     )}
+1187: 
+1188:                     {/* CASE 2: No Tasks -> Show Empty State
+1189:                     {todayEvents.length === 0 && (
+1190:                         <section className="animate-fade-in"
+1191:                             <SectionTitle title="Today's Eve
+1192:                             <div className="calendar-events-
+1193:                                 <div className="empty-events
+1194:                                     <Calendar size={32} opac
+1195:                                     <p>No calendar events to
+1196:                                 </div>
+1197:                             </div>
+1198:                         </section>
+1199:                     )}
+1200:                 </div>
+1201: 
+1202:                 {/* Sidebar Column (Can be used for other wi
+1203:                 <div className="flex flex-col gap-10">
+1204:                 </div>
+1205:             </div>
+1206:         </>
+1207:     )}
+1208: </main>
+1209: </div>
+1210:     );
+1211: };
+1212: 
+1213: const FacultyDashboard = () => (
+1214:     <div className="space-y-8 animate-fade-in">
+1215:         <h1 className="text-2xl font-bold text-[var(--color-
+1216:         <div className="grid grid-cols-1 sm:grid-cols-2 md:g
+1217:             <StatCard icon={BookOpen} label="Active Courses"
+1218:             <StatCard icon={Users} label="Total Students" va
+1219:             <StatCard icon={FileText} label="Pending Grading
+1220:         </div>
+1221:     </div>
+1222: );
+1223: 
+1224: const Dashboard = () => {
+1225:     const { user } = useAuth();
+1226:     if (!user) return null;
+1227: 
+1228:     return (
+1229:         <div className="">
+1230: 
+1231:             {user.role === 'student' && <StudentDashboard us
+1232:             {user.role === 'admin' && <Navigate to="/admin/d
+1233:             {user.role === 'faculty' && <Navigate to="/facul
+1234:         </div>
+1235:     );
+1236: };
+1237: 
+1238: export default Dashboard;
+1239: 

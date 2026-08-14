@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RGUKT Connect - App Download</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Inter:wght@400;500;600&display=swap');
+        
+        body { margin: 0; padding: 0; background-color: #f0f4f8; -webkit-font-smoothing: antialiased; }
+        
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 600px) {
+            .email-container { width: 100% !important; border-radius: 0 !important; border-top: none !important; }
+            .wrapper-table { padding: 0 !important; }
+            .header-cell { padding: 40px 20px 30px !important; }
+            .body-cell { padding: 20px 20px 30px !important; }
+            .footer-cell { padding: 30px 20px !important; }
+            .btn-table { width: 100% !important; max-width: 100% !important; }
+            .btn { display: block !important; width: auto !important; box-sizing: border-box !important; padding: 18px 20px !important; font-size: 18px !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f4f8;">
+
+    <!-- Wrapper -->
+    <table class="wrapper-table" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f0f4f8; padding: 60px 15px;">
+        <tr>
+            <td align="center">
+                <!-- Main Container -->
+                <table class="email-container" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; border-top: 6px solid #4f46e5; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); max-width: 600px; width: 100%;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td class="header-cell" align="center" style="background-color: #ffffff; padding: 50px 40px 30px;">
+                            <img src="https://rgukt.in/logo.svg" alt="RGUKT Logo" width="56" height="56" style="display: block; margin-bottom: 20px; border: 0;" />
+                            <h1 style="font-family: 'Outfit', sans-serif; color: #1e293b; margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">RGUKT Connect</h1>
+                            <p style="color: #64748b; margin: 6px 0 0 0; font-size: 16px; font-weight: 500;">Your digital campus awaits</p>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td class="body-cell" align="center" style="padding: 10px 50px 20px;">
+                            <h2 style="font-family: 'Outfit', sans-serif; color: #334155; margin: 0 0 16px 0; font-size: 22px; font-weight: 700;">Ready to dive in?</h2>
+                            <p style="color: #475569; font-size: 16px; line-height: 1.6; margin: 0 0 40px 0; text-align: center;">
+                                Hi there,<br><br>
+                                You recently requested a link to download the official <strong>RGUKT Connect</strong> mobile app. We're thrilled to have you! The app is your all-in-one portal for university announcements, student resources, and community forums.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- CTA Button -->
+                    <tr>
+                        <td align="center" style="padding: 0 50px 50px;">
+                            <table class="btn-table" border="0" cellspacing="0" cellpadding="0" style="margin: 0 auto; width: 100%; max-width: 260px;">
+                                <tr>
+                                    <td align="center" style="border-radius: 8px; background-color: #4f46e5;">
+                                        <a class="btn" href="{{download_link}}" target="_blank" style="font-size: 16px; font-family: 'Inter', sans-serif; color: #ffffff; text-decoration: none; border-radius: 8px; padding: 16px 0; border: 1px solid #4f46e5; display: block; font-weight: 600; width: 100%; text-align: center;">
+                                            Download App Now
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer-cell" align="center" style="background-color: #f8fafc; padding: 40px 50px; border-top: 1px solid #e2e8f0;">
+                            <p style="color: #64748b; font-size: 14px; margin: 0 0 12px 0; line-height: 1.5;">
+                                Having trouble with the button? Copy and paste this URL into your browser:
+                            </p>
+                            <a href="{{download_link}}" style="color: #4f46e5; font-size: 14px; word-break: break-all; text-decoration: underline;">
+                                {{download_link}}
+                            </a>
+                            <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 20px;">
+                                <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+                                    &copy; 2026 RGUKT CONNECT.
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_glass_background"
+    android:padding="16dp">
+
+    <!-- Priority/Status Strip -->
+    <View
+        android:id="@+id/v_status_strip"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/widget_priority_blue" />
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/ll_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/v_status_strip"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="NEXT CLASS"
+            android:fontFamily="sans-serif-medium"
+            android:textSize="11sp"
+            android:textColor="#B3FFFFFF"
+            android:letterSpacing="0.05" />
+    </LinearLayout>
+
+    <!-- Subject Title -->
+    <TextView
+        android:id="@+id/tv_subject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_header"
+        android:layout_toEndOf="@id/v_status_strip"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
+        android:maxLines="1"
+        android:text="Mathematics"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+        
+    <!-- Room and Time -->
+    <TextView
+        android:id="@+id/tv_room_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_subject"
+        android:layout_toEndOf="@id/v_status_strip"
+        android:layout_marginTop="4dp"
+        android:text="Room 205 • 9:30 AM"
+        android:textColor="#B3FFFFFF"
+        android:textSize="13sp" />
+
+    <!-- Live Countdown -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@id/v_status_strip"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Starts in "
+            android:textColor="#4CAF50"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-medium" />
+            
+        <Chronometer
+            android:id="@+id/chrono_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#4CAF50"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-bold"
+            android:format="%s" />
+    </LinearLayout>
+
+</RelativeLayout>

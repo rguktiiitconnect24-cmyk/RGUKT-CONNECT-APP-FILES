@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">RGUKT CONNECT</string>
+    <string name="title_activity_main">RGUKT CONNECT</string>
+    <string name="package_name">com.rgukt.connect</string>
+    <string name="custom_url_scheme">com.rgukt.connect</string>
+    <string name="shortcut_timetable_short">Time Table</string>
+    <string name="shortcut_timetable_long">Class Time Table</string>
+    <string name="shortcut_exams_short">Exams</string>
+    <string name="shortcut_exams_long">Exam &amp; Seating</string>
+    <string name="shortcut_complaints_short">Support</string>
+    <string name="shortcut_complaints_long">Support &amp; Complaints</string>
+    <string name="shortcut_profile_short">Profile</string>
+    <string name="shortcut_profile_long">Student Profile</string>
+    <string name="shortcut_dashboard_short">Dashboard</string>
+    <string name="shortcut_dashboard_long">Home Dashboard</string>
+    <string name="shortcut_courses_short">Courses</string>
+    <string name="shortcut_courses_long">Study Material</string>
+    <string name="app_widget_notice_description">RGUKT Connect Notices</string>
+    <string name="server_client_id">2907414387-datca8tad78d07d57edkhta34a3btgg8.apps.googleusercontent.com</string>
+</resources>

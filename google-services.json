@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "2907414387",
+    "firebase_url": "https://iiit-connect-d4b88-default-rtdb.firebaseio.com",
+    "project_id": "iiit-connect-d4b88",
+    "storage_bucket": "iiit-connect-d4b88.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2907414387:android:9ed79485f333fdc5f52f06",
+        "android_client_info": {
+          "package_name": "com.iiit.connect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "2907414387-3bs85gnp593kef1rka70is8qvgsp7aso.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iiit.connect",
+            "certificate_hash": "c9cb0ad5dede80f745ea85c15a0223892acf9a85"
+          }
+        },
+        {
+          "client_id": "2907414387-6ori9il4sbrhbpbtbbugg0mjtco3pl3v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iiit.connect",
+            "certificate_hash": "8daf37e4325b8cd6031e9f22c1844ec5ce24d88b"
+          }
+        },
+        {
+          "client_id": "2907414387-9ctdl6jfnu002f7depj3t53skkdt9a12.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.iiit.connect",
+            "certificate_hash": "0ab33f989ab239bedd194328af06c201b1bb2784"
+          }
+        },
+        {
+          "client_id": "2907414387-datca8tad78d07d57edkhta34a3btgg8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDc1DGvSiLm93SYqXyWWJSsaNbRtA5L2DY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "2907414387-3gvqvusbc5dou5s8agj9dsgm988smv0r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:2907414387:android:895b447f44dbf41af52f06",
+        "android_client_info": {
+          "package_name": "com.rgukt.connect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "2907414387-datca8tad78d07d57edkhta34a3btgg8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDc1DGvSiLm93SYqXyWWJSsaNbRtA5L2DY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "2907414387-3gvqvusbc5dou5s8agj9dsgm988smv0r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
