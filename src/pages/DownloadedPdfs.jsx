@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Trash2, Download, Smartphone } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Trash2, Download, Smartphone, Share2, Eye, CheckSquare, Square, CheckCircle2 } from 'lucide-react';
+import { Share } from '@capacitor/share';
 import { useNavigate } from 'react-router-dom';
-import { getAllCachedPdfs, deletePdf, openPdf } from '../services/pdfCacheService';
+import { getAllCachedPdfs, deletePdf, openPdf, subscribeToAllDownloads, unsubscribeFromAllDownloads } from '../services/pdfCacheService';
 import LoadingTransition from '../components/Common/LoadingTransition';
 import './DownloadedPdfs.css';
 
@@ -10,10 +11,25 @@ const DownloadedPdfs = () => {
     const [pdfs, setPdfs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
+    const [deleteModal, setDeleteModal] = useState({ show: false, id: null, bulk: false });
+    const [activeDownloadsMap, setActiveDownloadsMap] = useState({});
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const longPressTimer = useRef(null);
 
     useEffect(() => {
         loadPdfs();
+        subscribeToAllDownloads(setActiveDownloadsMap);
+        
+        const handlePdfDownloaded = () => {
+            loadPdfs();
+        };
+        window.addEventListener('pdfDownloaded', handlePdfDownloaded);
+
+        return () => {
+            unsubscribeFromAllDownloads(setActiveDownloadsMap);
+            window.removeEventListener('pdfDownloaded', handlePdfDownloaded);
+        };
     }, []);
 
     const loadPdfs = async () => {
@@ -36,15 +52,21 @@ const DownloadedPdfs = () => {
     };
 
     const confirmDelete = async () => {
-        if (deleteModal.id) {
+        if (deleteModal.bulk) {
+            for (const id of selectedIds) {
+                await deletePdf(id);
+            }
+            setSelectedIds(new Set());
+            setSelectionMode(false);
+        } else if (deleteModal.id) {
             await deletePdf(deleteModal.id);
-            await loadPdfs();
-            setDeleteModal({ show: false, id: null });
         }
+        await loadPdfs();
+        setDeleteModal({ show: false, id: null, bulk: false });
     };
 
     const cancelDelete = () => {
-        setDeleteModal({ show: false, id: null });
+        setDeleteModal({ show: false, id: null, bulk: false });
     };
 
     const filteredPdfs = pdfs.filter(p => 
@@ -55,6 +77,69 @@ const DownloadedPdfs = () => {
     const formatDate = (dateString) => {
         const d = new Date(dateString);
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    // Long Press Handlers
+    const handleTouchStart = (pdf) => {
+        if (selectionMode) return;
+        longPressTimer.current = setTimeout(() => {
+            setSelectionMode(true);
+            setSelectedIds(new Set([pdf.id]));
+            longPressTimer.current = 'fired';
+            setTimeout(() => { if (longPressTimer.current === 'fired') longPressTimer.current = null; }, 500);
+            if (navigator.vibrate) navigator.vibrate(40);
+        }, 500);
+    };
+
+    const cancelLongPress = () => {
+        if (longPressTimer.current && longPressTimer.current !== 'fired') {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+    };
+
+    const handleItemClick = (pdf) => {
+        if (longPressTimer.current === 'fired') {
+            longPressTimer.current = null;
+            return;
+        }
+        if (selectionMode) {
+            const newSet = new Set(selectedIds);
+            if (newSet.has(pdf.id)) {
+                newSet.delete(pdf.id);
+                if (newSet.size === 0) setSelectionMode(false);
+            } else {
+                newSet.add(pdf.id);
+            }
+            setSelectedIds(newSet);
+            return;
+        }
+        openPdf(pdf.localUri);
+    };
+
+    // Bulk Actions
+    const handleBulkShare = async () => {
+        if (selectedIds.size === 0) return;
+        const selectedPdfs = pdfs.filter(p => selectedIds.has(p.id));
+        try {
+            await Share.share({
+                title: `Share ${selectedIds.size} PDFs`,
+                files: selectedPdfs.map(p => p.localUri),
+                dialogTitle: 'Share PDFs'
+            });
+            setSelectionMode(false);
+            setSelectedIds(new Set());
+        } catch (e) {
+            console.error("Error sharing multiple files:", e);
+        }
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.size === filteredPdfs.length) {
+            setSelectedIds(new Set()); // Deselect all
+        } else {
+            setSelectedIds(new Set(filteredPdfs.map(p => p.id))); // Select all filtered
+        }
     };
 
     if (loading) return <LoadingTransition message="Loading offline library..." persistent variant="book" />;
@@ -86,9 +171,31 @@ const DownloadedPdfs = () => {
                 </div>
             </div>
 
+            {(() => {
+                const downloadingItems = Object.values(activeDownloadsMap).filter(d => d.state === 'DOWNLOADING' || d.state === 'RESUMING');
+                if (downloadingItems.length === 0) return null;
+                const totalBytes = downloadingItems.reduce((acc, curr) => acc + (curr.totalBytes || 0), 0);
+                const downloadedBytes = downloadingItems.reduce((acc, curr) => acc + (curr.downloadedBytes || 0), 0);
+                const overallProgress = totalBytes > 0 ? (downloadedBytes / totalBytes) * 100 : 0;
+
+                return (
+                    <div style={{ background: 'var(--color-blue-50, #eff6ff)', padding: '16px 20px', borderRadius: '16px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid var(--color-blue-200, #bfdbfe)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', fontWeight: '600', color: 'var(--color-blue-800, #1e40af)' }}>
+                                <span>Downloading {downloadingItems.length} PDF{downloadingItems.length > 1 ? 's' : ''}...</span>
+                                <span>{Math.round(overallProgress)}%</span>
+                            </div>
+                            <div style={{ height: '6px', background: '#e0e7ff', borderRadius: '6px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${overallProgress}%`, backgroundColor: '#4f46e5', transition: 'width 0.3s ease' }}></div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* Search Bar */}
             {pdfs.length > 0 && (
-                <div className="offline-library-search-wrapper">
+                <div className="offline-library-search-wrapper" style={{ margin: '0 24px 24px 24px' }}>
                     <Search className="offline-library-search-icon" size={18} />
                     <input 
                         type="text" 
@@ -97,6 +204,17 @@ const DownloadedPdfs = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                </div>
+            )}
+            
+            {selectionMode && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 24px 16px 24px', padding: '0 4px' }}>
+                    <button onClick={handleSelectAll} style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: '600' }}>
+                        {selectedIds.size === filteredPdfs.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                    <button onClick={() => { setSelectionMode(false); setSelectedIds(new Set()); }} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600' }}>
+                        Done
+                    </button>
                 </div>
             )}
 
@@ -117,31 +235,53 @@ const DownloadedPdfs = () => {
                         </button>
                     </div>
                 ) : filteredPdfs.length > 0 ? (
-                    filteredPdfs.map(pdf => (
-                        <div 
-                            key={pdf.id} 
-                            className="offline-library-item" 
-                            onClick={() => openPdf(pdf.localUri)}
-                            style={{ cursor: 'pointer' }}
-                        >
-                            <div className="offline-library-item-icon">
-                                <Download size={22} strokeWidth={2.5} />
-                            </div>
-                            <div className="offline-library-item-content">
-                                <h3 className="offline-library-item-title">{pdf.name.replace('.pdf', '')}</h3>
-                                <p className="offline-library-item-meta">
-                                    {pdf.hierarchy ? pdf.hierarchy.join(' • ') : 'Downloaded'} • {formatDate(pdf.downloadedAt)}
-                                </p>
-                            </div>
-                            <button 
-                                className="offline-library-item-delete"
-                                onClick={(e) => handleDeleteClick(e, pdf.id)}
-                                aria-label="Delete PDF"
+                    filteredPdfs.map(pdf => {
+                        const isSelected = selectedIds.has(pdf.id);
+                        return (
+                            <div 
+                                key={pdf.id} 
+                                className="offline-library-item" 
+                                onTouchStart={() => handleTouchStart(pdf)}
+                                onTouchEnd={cancelLongPress}
+                                onTouchMove={cancelLongPress}
+                                onMouseDown={() => handleTouchStart(pdf)}
+                                onMouseUp={cancelLongPress}
+                                onMouseLeave={cancelLongPress}
+                                onClick={() => handleItemClick(pdf)}
+                                style={{ 
+                                    cursor: 'pointer', WebkitUserSelect: 'none', userSelect: 'none',
+                                    border: isSelected ? '2px solid #3b82f6' : '2px solid transparent',
+                                    backgroundColor: isSelected ? '#eff6ff' : 'white',
+                                    transition: 'all 0.2s ease'
+                                }}
                             >
-                                <Trash2 size={18} strokeWidth={2} />
-                            </button>
-                        </div>
-                    ))
+                                {selectionMode ? (
+                                    <div style={{ width: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {isSelected ? <CheckCircle2 size={20} color="#3b82f6" fill="#bfdbfe" /> : <Square size={20} color="#cbd5e1" />}
+                                    </div>
+                                ) : (
+                                    <div className="offline-library-item-icon">
+                                        <Download size={18} strokeWidth={2.5} />
+                                    </div>
+                                )}
+                                <div className="offline-library-item-content">
+                                    <h3 className="offline-library-item-title">{pdf.name.replace('.pdf', '')}</h3>
+                                    <p className="offline-library-item-meta">
+                                        {pdf.hierarchy ? pdf.hierarchy.join(' • ') : 'Downloaded'} • {formatDate(pdf.downloadedAt)}
+                                    </p>
+                                </div>
+                                {!selectionMode && (
+                                    <button 
+                                        className="offline-library-item-delete"
+                                        onClick={(e) => handleDeleteClick(e, pdf.id)}
+                                        aria-label="Delete PDF"
+                                    >
+                                        <Trash2 size={16} strokeWidth={2} />
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })
                 ) : (
                     <div className="empty-state">
                         <div style={{ color: '#d1d5db', marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
@@ -176,13 +316,13 @@ const DownloadedPdfs = () => {
                                 className="text-lg font-bold text-slate-900 mb-2" 
                                 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#0f172a', marginBottom: '0.5rem' }}
                             >
-                                Remove Downloaded PDF
+                                {deleteModal.bulk ? `Remove ${selectedIds.size} PDFs` : 'Remove Downloaded PDF'}
                             </h3>
                             <p 
                                 className="text-sm text-slate-500 mb-6" 
                                 style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem', lineHeight: '1.25rem' }}
                             >
-                                Are you sure you want to remove this PDF from your device? You will need to download it again to view it offline.
+                                {deleteModal.bulk ? 'Are you sure you want to remove these PDFs from your device?' : 'Are you sure you want to remove this PDF from your device? You will need to download it again to view it offline.'}
                             </p>
                             <div className="flex space-x-3" style={{ display: 'flex', gap: '0.75rem' }}>
                                 <button 
@@ -201,6 +341,65 @@ const DownloadedPdfs = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Unified Action Bottom Sheet */}
+            {selectionMode && (
+                <>
+                    <div 
+                        className="bottom-sheet-container"
+                        style={{ 
+                            position: 'fixed', bottom: 0, left: 0, right: 0, 
+                            backgroundColor: 'white', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', 
+                            padding: '24px 20px 100px 20px', zIndex: 2147483647, 
+                            boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+                            animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                        }}
+                    >
+                        <div style={{ width: '40px', height: '4px', backgroundColor: '#e2e8f0', borderRadius: '4px', margin: '0 auto 20px auto' }} />
+                        
+                        <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: '#0f172a', textAlign: 'center' }}>
+                            {selectedIds.size} Selected
+                        </h3>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '24px' }}>
+                            {selectedIds.size === 1 && (
+                                <button 
+                                    onClick={() => {
+                                        const pdfId = Array.from(selectedIds)[0];
+                                        const pdf = pdfs.find(p => p.id === pdfId);
+                                        if (pdf) openPdf(pdf.localUri);
+                                        setSelectionMode(false);
+                                        setSelectedIds(new Set());
+                                    }} 
+                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: 'none', backgroundColor: '#f8fafc', borderRadius: '12px', fontSize: '15px', fontWeight: '600', color: '#334155' }}
+                                >
+                                    <Eye size={20} color="#3b82f6" /> View PDF
+                                </button>
+                            )}
+                            <button 
+                                onClick={handleBulkShare} 
+                                disabled={selectedIds.size === 0}
+                                style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: 'none', backgroundColor: selectedIds.size > 0 ? '#f8fafc' : '#f1f5f9', borderRadius: '12px', fontSize: '15px', fontWeight: '600', color: selectedIds.size > 0 ? '#334155' : '#94a3b8' }}
+                            >
+                                <Share2 size={20} color={selectedIds.size > 0 ? "#10b981" : "#94a3b8"} /> Share
+                            </button>
+                            <button 
+                                onClick={() => setDeleteModal({ show: true, bulk: true })} 
+                                disabled={selectedIds.size === 0}
+                                style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: 'none', backgroundColor: selectedIds.size > 0 ? '#fee2e2' : '#f1f5f9', borderRadius: '12px', fontSize: '15px', fontWeight: '600', color: selectedIds.size > 0 ? '#ef4444' : '#94a3b8' }}
+                            >
+                                <Trash2 size={20} color={selectedIds.size > 0 ? "#ef4444" : "#94a3b8"} /> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <style>{`
+                        @keyframes slideUp {
+                            from { transform: translateY(100%); }
+                            to { transform: translateY(0); }
+                        }
+                    `}</style>
+                </>
             )}
         </div>
     );

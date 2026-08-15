@@ -31,11 +31,21 @@ const NavigationController = () => {
             }
         };
 
+        const handleAppNavigate = (e) => {
+            if (e.detail && typeof e.detail === 'string') {
+                if (location.pathname !== e.detail) {
+                    navigate(e.detail);
+                }
+            }
+        };
+
         // Attach global listener using capture phase to ensure it intercepts clicks before complex React synthetic events or Native overlays
         document.addEventListener('click', handleGlobalNavClick, true);
+        window.addEventListener('appNavigate', handleAppNavigate);
 
         return () => {
             document.removeEventListener('click', handleGlobalNavClick, true);
+            window.removeEventListener('appNavigate', handleAppNavigate);
         };
     }, [navigate, location.pathname]);
 

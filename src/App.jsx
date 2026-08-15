@@ -24,6 +24,8 @@ import packageJson from '../package.json';
 import { sendHeartbeat } from './services/healthMonitor';
 import { FirebaseAnalytics } from '@capacitor-community/firebase-analytics';
 import { notificationService } from './services/notificationService';
+import { resumeInterruptedDownloads } from './services/pdfCacheService';
+
 // Lazy load pages
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
@@ -132,6 +134,9 @@ const App = () => {
       }
     };
     getAppInfo();
+
+    // Auto-resume background PDF downloads
+    resumeInterruptedDownloads();
   }, []);
 
 

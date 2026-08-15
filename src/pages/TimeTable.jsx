@@ -72,6 +72,31 @@ const TimeTable = () => {
         );
     };
 
+    const defaultTimeline = [
+        { start: '08:30', end: '09:30', label: 'P1', type: 'period', index: 0 },
+        { start: '09:30', end: '10:30', label: 'P2', type: 'period', index: 1 },
+        { start: '10:30', end: '10:40', label: 'Short Break', type: 'break' },
+        { start: '10:40', end: '11:40', label: 'P3', type: 'period', index: 2 },
+        { start: '11:40', end: '12:40', label: 'P4', type: 'period', index: 3 },
+        { start: '12:40', end: '13:40', label: 'Lunch Break', type: 'break' },
+        { start: '13:40', end: '14:40', label: 'P5', type: 'period', index: 4 },
+        { start: '14:40', end: '15:40', label: 'P6', type: 'period', index: 5 },
+        { start: '15:40', end: '15:50', label: 'Short Break', type: 'break' },
+        { start: '15:50', end: '16:50', label: 'P7', type: 'period', index: 6 }
+    ];
+    const [timelineConfig, setTimelineConfig] = React.useState(defaultTimeline);
+
+    const convertTo12Hour = (time24) => {
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+    };
+
+    const timeSlots = timelineConfig.filter(t => t.type === 'period').map(t => `${convertTo12Hour(t.start)} - ${convertTo12Hour(t.end)}`);
+    const breaks = timelineConfig.filter(t => t.type === 'break');
+
     React.useEffect(() => {
         let isMounted = true;
         const fetchSchedule = async () => {
@@ -233,6 +258,18 @@ const TimeTable = () => {
             }
         };
 
+        const fetchSettings = async () => {
+            try {
+                const settingsRef = doc(db, "settings", "timetable");
+                const docSnap = await getDoc(settingsRef);
+                if (docSnap.exists() && docSnap.data().timeline) {
+                    if (isMounted) setTimelineConfig(docSnap.data().timeline);
+                }
+            } catch (error) {
+                console.error("Error fetching timetable settings:", error);
+            }
+        };
+
         const fetchHolidayStatus = async () => {
             const cacheKey = 'timetable_holiday_status';
             const cached = sessionStorage.getItem(cacheKey);
@@ -268,6 +305,7 @@ const TimeTable = () => {
             }
         };
 
+        fetchSettings();
         fetchSchedule();
         fetchHolidayStatus();
         
@@ -288,15 +326,16 @@ const TimeTable = () => {
                 const totalMin = curHour * 60 + curMin;
 
                 // Time slots map to minutes from 00:00
-                const slotsMin = [
-                    { start: 510, end: 570, label: '08:30 AM - 09:30 AM' },
-                    { start: 570, end: 630, label: '09:30 AM - 10:30 AM' },
-                    { start: 640, end: 700, label: '10:40 AM - 11:40 AM' },
-                    { start: 700, end: 760, label: '11:40 AM - 12:40 PM' },
-                    { start: 820, end: 880, label: '01:40 PM - 02:40 PM' },
-                    { start: 880, end: 940, label: '02:40 PM - 03:40 PM' },
-                    { start: 950, end: 1010, label: '03:50 PM - 04:50 PM' }
-                ];
+                const periodSlots = timelineConfig.filter(t => t.type === 'period');
+                const slotsMin = periodSlots.map(p => {
+                    const [sH, sM] = p.start.split(':').map(Number);
+                    const [eH, eM] = p.end.split(':').map(Number);
+                    return { 
+                        start: sH * 60 + sM, 
+                        end: eH * 60 + eM, 
+                        label: `${convertTo12Hour(p.start)} - ${convertTo12Hour(p.end)}` 
+                    };
+                });
 
                 let currentIdx = slotsMin.findIndex(s => totalMin >= s.start && totalMin < s.end);
                 let currentTopic = currentIdx !== -1 ? daySchedule[currentIdx] : 'No ongoing class';
@@ -331,15 +370,7 @@ const TimeTable = () => {
         return `color-${color}`;
     };
 
-    const timeSlots = [
-        '08:30 AM - 09:30 AM',
-        '09:30 AM - 10:30 AM',
-        '10:40 AM - 11:40 AM',
-        '11:40 AM - 12:40 PM',
-        '01:40 PM - 02:40 PM',
-        '02:40 PM - 03:40 PM',
-        '03:50 PM - 04:50 PM'
-    ];
+
 
     const handleDownloadPDF = async () => {
         console.log("TimeTable: handleDownloadPDF triggered");
@@ -692,7 +723,7 @@ const TimeTable = () => {
                                                     ))}
                                                     <th className="break-header">
                                                         <div className="period-title">BREAK</div>
-                                                        <span className="period-time">10:30 - 10:40</span>
+                                                        <span className="period-time">{breaks[0] ? `${convertTo12Hour(breaks[0].start)} - ${convertTo12Hour(breaks[0].end)}` : '10:30 - 10:40'}</span>
                                                     </th>
                                                     {[3, 4].map(p => (
                                                         <th key={p}>
@@ -702,7 +733,7 @@ const TimeTable = () => {
                                                     ))}
                                                     <th className="lunch-header">
                                                         <div className="period-title">LUNCH</div>
-                                                        <span className="period-time">12:40 - 01:40</span>
+                                                        <span className="period-time">{breaks[1] ? `${convertTo12Hour(breaks[1].start)} - ${convertTo12Hour(breaks[1].end)}` : '12:40 - 01:40'}</span>
                                                     </th>
                                                     {[5, 6].map(p => (
                                                         <th key={p}>
@@ -712,7 +743,7 @@ const TimeTable = () => {
                                                     ))}
                                                     <th className="break-header">
                                                         <div className="period-title">BREAK</div>
-                                                        <span className="period-time">03:40 - 03:50</span>
+                                                        <span className="period-time">{breaks[2] ? `${convertTo12Hour(breaks[2].start)} - ${convertTo12Hour(breaks[2].end)}` : '03:40 - 03:50'}</span>
                                                     </th>
                                                     <th>
                                                         <div className="period-title">P7</div>

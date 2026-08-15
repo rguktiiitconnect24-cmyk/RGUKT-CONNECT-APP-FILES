@@ -64,6 +64,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(FileDownloadPlugin.class);
         registerPlugin(AppPermissionsPlugin.class);
         registerPlugin(WidgetPlugin.class);
+        registerPlugin(NotificationProgressPlugin.class);
 
         super.onCreate(savedInstanceState);
 
@@ -263,12 +264,16 @@ public class MainActivity extends BridgeActivity {
     private void handleIntent(Intent intent) {
         if (intent != null && intent.hasExtra("target_page")) {
             final String targetPage = intent.getStringExtra("target_page");
-            mainHandler.postDelayed(() -> {
-                if (this.bridge != null && this.bridge.getWebView() != null) {
-                    this.bridge.getWebView().evaluateJavascript(
-                        "window.dispatchEvent(new CustomEvent('appNavigate', { detail: '" + targetPage + "' }));", null);
-                }
-            }, 100);
+            intent.removeExtra("target_page");
+            
+            for (int i = 1; i <= 20; i++) {
+                mainHandler.postDelayed(() -> {
+                    if (this.bridge != null && this.bridge.getWebView() != null) {
+                        this.bridge.getWebView().evaluateJavascript(
+                            "window.dispatchEvent(new CustomEvent('appNavigate', { detail: '" + targetPage + "' }));", null);
+                    }
+                }, i * 250);
+            }
         }
     }
 

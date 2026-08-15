@@ -12,7 +12,6 @@ const Library = () => {
         semester: '',
         year: ''
     });
-
     useEffect(() => {
         loadPdfs();
     }, []); // Only fetch once on mount

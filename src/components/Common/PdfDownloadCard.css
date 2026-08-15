@@ -151,3 +151,33 @@
         transform: rotate(360deg);
     }
 }
+
+.pdf-tick-anim {
+    animation: popInTick 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popInTick {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.pdf-eye-anim {
+    animation: fadeInUpEye 0.4s ease-out forwards;
+}
+
+@keyframes fadeInUpEye {
+    0% {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
