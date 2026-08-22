@@ -80,6 +80,19 @@ const booksConfig = {
 const booksApp = getApps().find(a => a.name === "books") || initializeApp(booksConfig, "books");
 const booksDb = getFirestore(booksApp);
 
+// PUC Students App (Dedicated Project)
+const pucConfig = {
+    apiKey: "AIzaSyBuWoWErAlHec_74kEP-USx7igtrCEFq1M",
+    authDomain: "puc-list.firebaseapp.com",
+    projectId: "puc-list",
+    storageBucket: "puc-list.firebasestorage.app",
+    messagingSenderId: "706971443859",
+    measurementId: "G-K77RPG7LM3"
+};
+
+const pucApp = getApps().find(a => a.name === "puc") || initializeApp(pucConfig, "puc");
+const pucDb = getFirestore(pucApp);
+
 // Initialize Firestore safely for HMR
 let db;
 try {
@@ -105,5 +118,6 @@ export {
     complaintsDb,
     contentDb, contentStorage,
     bulkUploadDb,
-    booksDb
+    booksDb,
+    pucDb
 };

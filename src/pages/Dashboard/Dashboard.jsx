@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Users, FileText, Clock, Award, Zap, LogOut, Settings, GraduationCap, ClipboardList, MessageSquare, ArrowUpRight, Calendar, Pin, ChevronRight } from 'lucide-react';
 import { db, bulkUploadDb } from '../../config/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { parseTimeRange, formatAttendancePercent } from '../../utils/formatUtils';
 import { noticeService } from '../../services/noticeService';
 import { PROGRAMS } from '../../config/academics';
@@ -150,13 +150,49 @@ const StudentDashboard = ({ user }) => {
     const [isTableLoading, setIsTableLoading] = React.useState(true);
     const [todayEvents, setTodayEvents] = React.useState([]);
 
+    const defaultTimeline = [
+        { start: '08:30', end: '09:30', label: 'P1', type: 'period', index: 0 },
+        { start: '09:30', end: '10:30', label: 'P2', type: 'period', index: 1 },
+        { start: '10:30', end: '10:40', label: 'Short Break', type: 'break' },
+        { start: '10:40', end: '11:40', label: 'P3', type: 'period', index: 2 },
+        { start: '11:40', end: '12:40', label: 'P4', type: 'period', index: 3 },
+        { start: '12:40', end: '13:40', label: 'Lunch Break', type: 'break' },
+        { start: '13:40', end: '14:40', label: 'P5', type: 'period', index: 4 },
+        { start: '14:40', end: '15:40', label: 'P6', type: 'period', index: 5 },
+        { start: '15:40', end: '16:40', label: 'P7', type: 'period', index: 6 }
+    ];
+    const [timeline, setTimeline] = React.useState(defaultTimeline);
+
+    const convertTo12Hour = (time24) => {
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+    };
+
+    React.useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const settingsRef = doc(db, "settings", "timetable");
+                const docSnap = await getDoc(settingsRef);
+                if (docSnap.exists() && docSnap.data().timeline) {
+                    setTimeline(docSnap.data().timeline);
+                }
+            } catch (error) {
+                console.error("Error fetching timetable settings:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
     const [examData, setExamData] = React.useState(null);
 
     React.useEffect(() => {
         const fetchExamData = async () => {
             if (!user?.uid) return;
             const cacheKey = `dashboard_exam_schedule_${user.uid}`;
-            const cached = sessionStorage.getItem(cacheKey);
+            const cached = null; // sessionStorage.getItem(cacheKey); disabled to allow real-time updates
             if (cached) {
                 setExamData(JSON.parse(cached));
                 return;
@@ -216,26 +252,55 @@ const StudentDashboard = ({ user }) => {
     }, [user]);
 
     React.useEffect(() => {
+        let unsubscribeLive = null;
+        
         const fetchAttendance = async () => {
-            if (!user?.studentId) {
+            if (!user?.studentId && !user?.uid) {
                 setAttendanceRate('0%');
                 return;
             }
             try {
-                const id = user.studentId.toUpperCase().replace(/^RGUKT-/i, '').trim();
-                const docSnap = await getDoc(doc(bulkUploadDb, 'attendance_rates', id));
-                if (docSnap.exists()) {
-                    setAttendanceRate(formatAttendancePercent(docSnap.data().consolidated));
-                } else {
-                    setAttendanceRate('0%');
-                }
+                // 1. Live Attendance from new system
+                const attendanceRef = collection(db, 'attendance');
+                const cleanId = String(user.studentId || user.rollNo || user.uid).toUpperCase().replace(/\s+/g, '').replace(/^RGUKT-/i, '');
+                const q = query(attendanceRef, where('studentId', '==', cleanId));
+                
+                unsubscribeLive = onSnapshot(q, async (snapshot) => {
+                    if (!snapshot.empty) {
+                        const records = snapshot.docs.map(d => d.data());
+                        let totalP = 0;
+                        let totalC = records.length;
+                        records.forEach(r => {
+                            if (r.status === 'present') totalP++;
+                        });
+                        const rate = totalC > 0 ? (totalP / totalC) * 100 : 0;
+                        setAttendanceRate(formatAttendancePercent(rate));
+                    } else {
+                        // 2. Fallback to legacy bulk upload system
+                        if (user?.studentId) {
+                            const id = user.studentId.toUpperCase().replace(/^RGUKT-/i, '').trim();
+                            const docSnap = await getDoc(doc(bulkUploadDb, 'attendance_rates', id));
+                            if (docSnap.exists()) {
+                                setAttendanceRate(formatAttendancePercent(docSnap.data().consolidated));
+                            } else {
+                                setAttendanceRate('0%');
+                            }
+                        } else {
+                            setAttendanceRate('0%');
+                        }
+                    }
+                });
             } catch (error) {
                 console.error("Error fetching attendance:", error);
                 setAttendanceRate('0%');
             }
         };
         fetchAttendance();
-    }, [user?.studentId]);
+        
+        return () => {
+            if (unsubscribeLive) unsubscribeLive();
+        };
+    }, [user]);
 
     React.useEffect(() => {
         const fetchCgpa = async () => {
@@ -247,7 +312,7 @@ const StudentDashboard = ({ user }) => {
                 const id = user.studentId.toUpperCase().replace(/^RGUKT-/i, '').trim();
                 const cacheKey = `dashboard_cgpa_${id}`;
                 
-                const cached = sessionStorage.getItem(cacheKey);
+                const cached = null; // sessionStorage.getItem(cacheKey); disabled to allow real-time updates
                 if (cached) {
                     const parsed = JSON.parse(cached);
                     setCurrentCgpa(parsed.cgpa ? parseFloat(parsed.cgpa).toFixed(2) : '0.00');
@@ -315,7 +380,7 @@ const StudentDashboard = ({ user }) => {
             if (!user?.uid) return;
             setIsTableLoading(true);
             const cacheKey = `dashboard_schedule_${user.uid}_${currentDay}`;
-            const cached = sessionStorage.getItem(cacheKey);
+            const cached = null; // sessionStorage.getItem(cacheKey); disabled to allow real-time updates
             if (cached && JSON.parse(cached) !== null && JSON.parse(cached) !== 'NOT_FOUND') {
                 setTodaySchedule(JSON.parse(cached));
                 setIsTableLoading(false);
@@ -458,19 +523,7 @@ const StudentDashboard = ({ user }) => {
 
     const getFullSubjectName = (code) => subjectMapping[code.toUpperCase()] || code;
 
-    // Timeline Configuration
-    const timeline = [
-        { start: '08:30', end: '09:30', label: 'P1', type: 'period', index: 0 },
-        { start: '09:30', end: '10:30', label: 'P2', type: 'period', index: 1 },
-        { start: '10:30', end: '10:40', label: 'SB', type: 'break' },
-        { start: '10:40', end: '11:40', label: 'P3', type: 'period', index: 2 },
-        { start: '11:40', end: '12:40', label: 'P4', type: 'period', index: 3 },
-        { start: '12:40', end: '13:40', label: 'LB', type: 'break' },
-        { start: '13:40', end: '14:40', label: 'P5', type: 'period', index: 4 },
-        { start: '14:40', end: '15:40', label: 'P6', type: 'period', index: 5 },
-        { start: '15:40', end: '15:50', label: 'SB', type: 'break' },
-        { start: '15:50', end: '16:50', label: 'P7', type: 'period', index: 6 }
-    ];
+    // Timeline Configuration removed (now in state)
 
     const getCurrentStatus = () => {
         const now = currentTime;
@@ -574,15 +627,7 @@ const StudentDashboard = ({ user }) => {
 
     const currentStatus = getCurrentStatus();
 
-    const timeSlots = [
-        '08:30 AM - 09:30 AM',
-        '09:30 AM - 10:30 AM',
-        '10:40 AM - 11:40 AM',
-        '11:40 AM - 12:40 PM',
-        '01:40 PM - 02:40 PM',
-        '02:40 PM - 03:40 PM',
-        '03:50 PM - 04:50 PM'
-    ];
+    const timeSlots = timeline.filter(t => t.type === 'period').map(t => `${convertTo12Hour(t.start)} - ${convertTo12Hour(t.end)}`);
 
     const renderSchedule = () => {
         if (isTableLoading) {
@@ -635,7 +680,7 @@ const StudentDashboard = ({ user }) => {
 
         for (let i = 0; i < 7; i++) {
             let subjectCode = todaySchedule[i];
-            let isContinuation = !subjectCode || subjectCode.trim() === '' || subjectCode === '\u200B';
+            let isContinuation = subjectCode === '\u200B';
 
             if (isContinuation && currentGroup) {
                 if (!(currentGroup.endIndex === 3 && i === 4)) {
@@ -651,9 +696,10 @@ const StudentDashboard = ({ user }) => {
                 subjectNameToUse = currentGroup.subjectName;
                 isFreeToUse = currentGroup.isFree;
             } else {
-                subjectCode = !isContinuation ? subjectCode : '-';
-                subjectNameToUse = getFullSubjectName(subjectCode);
-                isFreeToUse = subjectCode === 'Free' || subjectCode === '-';
+                let isFree = !subjectCode || subjectCode.trim() === '' || subjectCode === '-' || subjectCode === 'Free';
+                subjectCode = isFree ? 'Free Period' : subjectCode;
+                subjectNameToUse = isFree ? 'Free Period' : getFullSubjectName(subjectCode);
+                isFreeToUse = isFree;
             }
 
             if (!currentGroup) {
@@ -671,11 +717,21 @@ const StudentDashboard = ({ user }) => {
             groupedPeriods.push(currentGroup);
         }
 
-        const breakPoints = {
-            1: { type: 'break', label: 'Short Break', time: '10:30 AM - 10:40 AM', badge: 'B', className: 'break-item' },
-            3: { type: 'break', label: 'Lunch Break', time: '12:40 PM - 01:40 PM', badge: 'L', className: 'lunch-item' },
-            5: { type: 'break', label: 'Short Break', time: '03:40 PM - 03:50 PM', badge: 'B', className: 'break-item' }
-        };
+        const breakPoints = {};
+        let periodCount = -1;
+        timeline.forEach(t => {
+            if (t.type === 'period') {
+                periodCount++;
+            } else if (t.type === 'break') {
+                breakPoints[periodCount] = {
+                    type: 'break',
+                    label: t.label,
+                    time: `${convertTo12Hour(t.start)} - ${convertTo12Hour(t.end)}`,
+                    badge: t.label.toLowerCase().includes('lunch') ? 'L' : 'B',
+                    className: t.label.toLowerCase().includes('lunch') ? 'lunch-item' : 'break-item'
+                };
+            }
+        });
 
         for (let i = 0; i < groupedPeriods.length; i++) {
             const group = groupedPeriods[i];
@@ -779,9 +835,28 @@ const StudentDashboard = ({ user }) => {
                                 <stop offset="100%" stopColor="var(--anim-secondary)" />
                             </linearGradient>
                         </defs>
+                        <style>
+                            {`
+                            .dashboard-header-animated {
+                                border-radius: 14px !important;
+                                padding: 0.75rem 1.25rem !important;
+                            }
+                            .force-animate-border {
+                                stroke: rgba(139, 92, 246, 0.6);
+                                stroke-width: 1.5px;
+                                rx: 14px;
+                                ry: 14px;
+                                animation: softBreathe 4s ease-in-out infinite alternate;
+                            }
+                            @keyframes softBreathe {
+                                0% { opacity: 0.3; stroke-width: 1.5px; }
+                                100% { opacity: 1; stroke-width: 2px; }
+                            }
+                            `}
+                        </style>
                         {/* Static Border */}
                         <rect 
-                            className="border-base"
+                            className="force-animate-border"
                             x="1.5" y="1.5" 
                             pathLength="100"
                             style={{ width: 'calc(100% - 3px)', height: 'calc(100% - 3px)' }}

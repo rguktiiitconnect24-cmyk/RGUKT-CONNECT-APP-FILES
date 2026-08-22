@@ -1,4 +1,6 @@
-import { ChevronLeft, RefreshCw, CheckCircle, XCircle, Clock, ChevronRight, Save } from 'lucide-react';
+import { ChevronLeft, RefreshCw, CheckCircle, XCircle, Clock, ChevronRight, Save, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useState, useEffect } from 'react';
 import { submitQuizAttempt, savePendingQuiz } from '../../services/quizService';
 import { analyzeQuizResults } from '../../services/aiQuizService';
@@ -78,7 +80,7 @@ const shuffleArray = (array) => {
     return newArr;
 };
 
-const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onClose, passingPercentage = 40, difficulty = 'Moderate', initialState = null }) => {
+const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onClose, passingPercentage = 40, difficulty = 'Moderate', initialState = null, semester = null, subject = null, pastAttempt = null }) => {
     const { user } = useAuth();
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -88,6 +90,7 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
     const [timeLeft, setTimeLeft] = useState(15 * 60); // 15 minutes default
     const [aiFeedback, setAiFeedback] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
     
     // Auto-save key
     const progressKey = `quiz_progress_${moduleId}_${difficulty}`;
@@ -96,7 +99,14 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
     useEffect(() => {
         let loadedQuestions = initialQuestions;
 
-        if (initialState) {
+        if (pastAttempt) {
+            setAnswers(pastAttempt.answers || {});
+            setScore(pastAttempt.score || 0);
+            setTimeLeft((15 * 60) - (pastAttempt.timeTaken || 0));
+            setCurrentQuestionIndex(0);
+            setIsSubmitted(true);
+            loadedQuestions = initialQuestions; // Assuming pastAttempt doesn't store full questions array
+        } else if (initialState) {
             setAnswers(initialState.answers || {});
             setTimeLeft(initialState.timeLeft || 15 * 60);
             setCurrentQuestionIndex(initialState.currentQuestionIndex || 0);
@@ -115,7 +125,7 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
         }
         
         setQuestions(loadedQuestions);
-    }, [initialQuestions, moduleId, initialState]);
+    }, [initialQuestions, moduleId, initialState, pastAttempt]);
 
     // Timer Logic
     useEffect(() => {
@@ -125,7 +135,7 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    handleSubmit();
+                    handleSubmit(true);
                     return 0;
                 }
                 return prev - 1;
@@ -175,7 +185,12 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (isAutoSubmit = false) => {
+        if (isAutoSubmit !== true && Object.keys(answers).length < questions.length) {
+            setShowAlert(true);
+            setTimeout(() => setShowAlert(false), 3000);
+            return;
+        }
         let calculatedScore = 0;
         questions.forEach((q, index) => {
             if (answers[index] === q.correctAnswerIndex) {
@@ -220,7 +235,7 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
-    if (questions.length === 0) return <div className="p-8 text-center">Loading quiz...</div>;
+    if (questions.length === 0) return <div className="p-8 text-center">Loading MCQ...</div>;
 
     const currentQuestion = questions[currentQuestionIndex];
     const totalMarks = questions.reduce((acc, q) => acc + (q.marks || 1), 0);
@@ -228,17 +243,99 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
     const isPass = percentage >= passingPercentage;
 
     if (isSubmitted) {
+        const handleDownloadPdf = async () => {
+            const doc = new jsPDF();
+            const primaryColor = [78, 222, 163]; // #4edea3
+            const darkColor = [20, 25, 40];
+            
+            // Header Banner
+            doc.setFillColor(darkColor[0], darkColor[1], darkColor[2]);
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text("MCQ Response Sheet", 14, 20);
+            
+            // Student Details Box
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            
+            let subjStr = subject || 'N/A';
+            let topicStr = moduleTitle;
+            let semStr = semester || user?.currentSem || 'N/A';
+            
+            doc.text(`Name: ${user?.fullName || 'Student'}`, 14, 40);
+            doc.text(`Student ID: ${user?.studentId || user?.uid || 'N/A'}`, 14, 46);
+            doc.text(`Department: ${user?.branch || 'N/A'}`, 14, 52);
+            doc.text(`Semester: ${semStr}`, 14, 58);
+            
+            const totalM = questions.reduce((acc, q) => acc + (q.marks || 1), 0);
+            const isPass = (score / totalM >= passingPercentage / 100);
+            
+            doc.text(`Subject: ${subjStr}`, 110, 40);
+            doc.text(`Topic: ${topicStr}`, 110, 46);
+            doc.text(`Total Score: ${score} / ${totalM}`, 110, 52);
+            doc.text(`Status: ${isPass ? 'PASSED' : 'FAILED'}`, 110, 58);
+            
+            // Separator
+            doc.setDrawColor(200, 200, 200);
+            doc.line(14, 62, 196, 62);
+            
+            // Table Data
+            const tableColumn = ["Q.No", "Question", "Your Answer", "Correct Answer", "Result"];
+            const tableRows = [];
+            
+            questions.forEach((q, index) => {
+                const userAnswer = q.options[answers[index]] || "Not Answered";
+                const correctAnswer = q.options[q.correctAnswerIndex];
+                const result = (answers[index] === q.correctAnswerIndex) ? "Correct" : "Incorrect";
+                
+                tableRows.push([
+                    index + 1,
+                    q.questionText,
+                    userAnswer,
+                    correctAnswer,
+                    result
+                ]);
+            });
+            
+            autoTable(doc, {
+                startY: 70,
+                head: [tableColumn],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: primaryColor, textColor: [0, 0, 0], fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [245, 245, 245] },
+                columnStyles: {
+                    0: { cellWidth: 15 },
+                    1: { cellWidth: 65 },
+                    2: { cellWidth: 40 },
+                    3: { cellWidth: 40 },
+                    4: { cellWidth: 20, fontStyle: 'bold' }
+                },
+                willDrawCell: function (data) {
+                    if (data.section === 'body' && data.column.index === 4) {
+                        if (data.cell.raw === 'Correct') {
+                            doc.setTextColor(34, 197, 94); // Green
+                        } else {
+                            doc.setTextColor(239, 68, 68); // Red
+                        }
+                    }
+                },
+                styles: { overflow: 'linebreak', fontSize: 9 }
+            });
+            
+            doc.save(`MCQ_Response_${user?.studentId || 'Student'}_${moduleId}.pdf`);
+        };
+
         return (
             <div className="embedded-quiz-container results-mode-new">
                 {/* TopAppBar */}
-                <nav className="results-nav">
-                    <div className="results-nav-left">
-                        <button className="results-back-btn" onClick={onClose}>
-                            <ChevronLeft size={24} />
-                        </button>
-                        <h1>Quiz Results: {moduleTitle}</h1>
-                    </div>
-                    <button className="results-close-btn" onClick={onClose}>Close</button>
+                <nav className="results-nav" style={{ justifyContent: "center", padding: "20px 16px", borderBottom: "1px solid var(--border-color)", marginBottom: "16px" }}>
+                    <h1 style={{ fontFamily: "'Plus Jakarta Sans', var(--font-sans), sans-serif", fontSize: "24px", margin: 0, textAlign: "center", color: "var(--on-surface)", fontWeight: 700, letterSpacing: "-0.3px", lineHeight: "1.3" }}>
+                        MCQ Results: {moduleTitle}
+                    </h1>
                 </nav>
 
                 <main className="results-main">
@@ -247,7 +344,7 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
                         <div className="rsc-content">
                             <div className="rsc-circle-container">
                                 <div className="circular-progress" style={{
-                                    background: `radial-gradient(closest-side, #060e20 79%, transparent 80% 100%), conic-gradient(#4edea3 ${percentage}%, #2d3449 0)`
+                                    background: `radial-gradient(closest-side, var(--surface-container) 79%, transparent 80% 100%), conic-gradient(var(--color-brand, #4338ca) ${percentage}%, var(--border-color) 0)`
                                 }}></div>
                                 <div className="rsc-circle-text">
                                     <span className="rsc-percentage">{percentage}%</span>
@@ -265,34 +362,43 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
                             </div>
                         </div>
                     </section>
+                    
+                    <div style={{ padding: "0 20px" }}>
+                        <button 
+                            className="download-response-btn" 
+                            onClick={handleDownloadPdf}
+                            style={{
+                                width: "100%", 
+                                padding: "16px", 
+                                background: "var(--color-brand, #4338ca)", 
+                                color: "var(--color-on-brand, #ffffff)", 
+                                fontWeight: "bold", 
+                                borderRadius: "var(--radius-xl, 1.25rem)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "8px",
+                                marginTop: "16px",
+                                marginBottom: "24px",
+                                fontSize: "16px",
+                                border: "none",
+                                cursor: "pointer",
+                                transition: "all 0.2s ease",
+                                boxShadow: "var(--shadow-md)"
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.background = "var(--color-brand-hover, #3730a3)";
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.background = "var(--color-brand, #4338ca)";
+                            }}
+                        >
+                            <Download size={20} />
+                            Download Response Sheet
+                        </button>
+                    </div>
 
-                    {/* AI Performance Analysis */}
-                    <section className="results-ai-section">
-                        <div className="results-ai-header">
-                            <RefreshCw className={isAnalyzing ? "animate-spin" : ""} size={20} />
-                            <h3>AI Performance Analysis</h3>
-                        </div>
-                        {isAnalyzing ? (
-                            <p className="results-ai-loading">Analyzing your strengths and weaknesses...</p>
-                        ) : aiFeedback ? (
-                            <div className="results-ai-content">
-                                <div className="ai-block strengths">
-                                    <h4>Strengths</h4>
-                                    <p>{aiFeedback.strengths}</p>
-                                </div>
-                                <div className="ai-block weaknesses">
-                                    <h4>Areas to Improve</h4>
-                                    <p>{aiFeedback.weaknesses}</p>
-                                </div>
-                                <div className="ai-block recommendation">
-                                    <h4>Recommendation</h4>
-                                    <p>{aiFeedback.recommendation}</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="results-ai-unavailable">Analysis unavailable at this time.</p>
-                        )}
-                    </section>
+
 
                     {/* Review Section */}
                     <section className="results-review-section">
@@ -425,6 +531,12 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
                 </div>
             </div>
 
+            {showAlert && (
+                <div style={{ background: '#ef444420', border: '1px solid #ef444440', color: '#f87171', padding: '12px', borderRadius: '8px', marginBottom: '16px', textAlign: 'center', fontSize: '14px', fontWeight: '500' }}>
+                    You must answer all questions before submitting the MCQ.
+                </div>
+            )}
+
             <div className="quiz-footer">
                 <button 
                     className="btn-nav prev" 
@@ -437,7 +549,7 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
                 <div style={{ display: 'flex', gap: '12px' }}>
                     <button 
                         className="btn-nav skip" 
-                        onClick={currentQuestionIndex === questions.length - 1 ? handleSubmit : handleNext}
+                        onClick={() => currentQuestionIndex === questions.length - 1 ? handleSubmit(false) : handleNext()}
                         style={{ background: 'transparent', border: '1px solid #cbd5e1', color: '#64748b' }}
                     >
                         Skip
@@ -446,10 +558,10 @@ const EmbeddedQuiz = ({ moduleId, moduleTitle, questions: initialQuestions, onCl
                     {currentQuestionIndex === questions.length - 1 ? (
                         <button 
                             className="btn-submit" 
-                            onClick={handleSubmit}
+                            onClick={() => handleSubmit(false)}
                             disabled={answers[currentQuestionIndex] === undefined}
                         >
-                            Submit Quiz
+                            Submit MCQ
                         </button>
                     ) : (
                         <button 

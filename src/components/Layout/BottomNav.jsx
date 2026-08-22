@@ -6,6 +6,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { complaintsDb } from '../../config/firebase';
 import { Badge } from '@capawesome/capacitor-badge';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { Capacitor } from '@capacitor/core';
 import '../../styles/BottomNav.css';
 
 const BottomNav = () => {
@@ -13,10 +14,15 @@ const BottomNav = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const visibleItems = React.useMemo(() =>
-        NAV_ITEMS.filter(item => !item.hideOnMobile),
-        []
-    );
+    const visibleItems = React.useMemo(() => {
+        const isNative = Capacitor.isNativePlatform() || true; // FORCED TRUE FOR TESTING
+        return NAV_ITEMS.filter(item => {
+            if (item.hideOnMobile) return false;
+            if (isNative && item.hideOnNativeBottomNav) return false;
+            if (!isNative && item.nativeBottomNavOnly) return false;
+            return true;
+        });
+    }, []);
 
     const [hasUnreadStudentReply, setHasUnreadStudentReply] = React.useState(false);
 

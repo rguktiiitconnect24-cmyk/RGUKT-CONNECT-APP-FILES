@@ -60,17 +60,6 @@ const OrderHistory = lazy(() => import('./pages/RCBookHub/OrderHistory'));
 const OrderDetails = lazy(() => import('./pages/RCBookHub/OrderDetails'));
 const RCBookHubProfile = lazy(() => import('./pages/RCBookHub/RCBookHubProfile'));
 
-// Faculty Pages
-const FacultyDashboard = lazy(() => import('./pages/Faculty/FacultyDashboard'));
-const FacultyProfile = lazy(() => import('./pages/Faculty/FacultyProfile'));
-const FacultySubjects = lazy(() => import('./pages/Faculty/FacultySubjects'));
-const FacultyQuizzes = lazy(() => import('./pages/Faculty/FacultyQuizzes'));
-const FacultyAssignments = lazy(() => import('./pages/Faculty/FacultyAssignments'));
-const FacultyAttendance = lazy(() => import('./pages/Faculty/FacultyAttendance'));
-const FacultyPerformance = lazy(() => import('./pages/Faculty/FacultyPerformance'));
-const FacultyNotices = lazy(() => import('./pages/Faculty/FacultyNotices'));
-const FacultyCommunication = lazy(() => import('./pages/Faculty/FacultyCommunication'));
-const FacultyReports = lazy(() => import('./pages/Faculty/FacultyReports'));
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -79,12 +68,6 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const FacultyRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <LoadingTransition persistent />;
-  if (!user || user.role?.toLowerCase() !== 'faculty') return <Navigate to="/dashboard" replace />;
-  return children;
-};
 
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -391,18 +374,6 @@ const App = () => {
                 <Route path="/admin/pdf/upload" element={<AdminRoute><PdfUpload /></AdminRoute>} />
                 <Route path="/admin/feedback" element={<AdminRoute><AdminFeedback /></AdminRoute>} />
 
-                {/* Faculty Routes */}
-                <Route path="/faculty" element={<FacultyRoute><Navigate to="/faculty/dashboard" replace /></FacultyRoute>} />
-                <Route path="/faculty/dashboard" element={<FacultyRoute><FacultyDashboard /></FacultyRoute>} />
-                <Route path="/faculty/profile" element={<FacultyRoute><FacultyProfile /></FacultyRoute>} />
-                <Route path="/faculty/subjects" element={<FacultyRoute><FacultySubjects /></FacultyRoute>} />
-                <Route path="/faculty/quizzes" element={<FacultyRoute><FacultyQuizzes /></FacultyRoute>} />
-                <Route path="/faculty/assignments" element={<FacultyRoute><FacultyAssignments /></FacultyRoute>} />
-                <Route path="/faculty/attendance" element={<FacultyRoute><FacultyAttendance /></FacultyRoute>} />
-                <Route path="/faculty/performance" element={<FacultyRoute><FacultyPerformance /></FacultyRoute>} />
-                <Route path="/faculty/notices" element={<FacultyRoute><FacultyNotices /></FacultyRoute>} />
-                <Route path="/faculty/communication" element={<FacultyRoute><FacultyCommunication /></FacultyRoute>} />
-                <Route path="/faculty/reports" element={<FacultyRoute><FacultyReports /></FacultyRoute>} />
 
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>

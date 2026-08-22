@@ -3,7 +3,15 @@ import { useState } from 'react';
 import { mapSubjectName } from '../../utils/formatUtils';
 import './MobileTimetable.css';
 
-const MobileTimetable = ({ schedule, selectedDay, timeSlots }) => {
+const MobileTimetable = ({ schedule, selectedDay, timeSlots, breaks = [] }) => {
+    const convertTo12Hour = (time24) => {
+        if (!time24) return '';
+        const [hours, minutes] = time24.split(':');
+        const h = parseInt(hours, 10);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+    };
     // Make sure we have a valid expanded day, defaulting to selectedDay or Monday if not found
     const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const initialDay = daysOfWeek.includes(selectedDay) ? selectedDay : 'Monday';
@@ -104,10 +112,13 @@ const MobileTimetable = ({ schedule, selectedDay, timeSlots }) => {
                                         // Render Lunch Break explicitly after Period 4 (index 3)
                                         // If a merged block crosses index 3, lunch will render after the block ends.
                                         if (endIdx === 3) {
+                                            const lunchBreak = breaks.find(b => b.label && b.label.toLowerCase().includes('lunch'));
+                                            const lunchLabel = lunchBreak ? `${convertTo12Hour(lunchBreak.start)} - ${convertTo12Hour(lunchBreak.end)}` : '12:40 - 01:40 PM';
+                                            
                                             renderedElements.push(
                                                 <div key="lunch-break" className="mobile-lunch-card">
-                                                    <span className="mobile-lunch-time">12:40 - 01:40 PM</span>
-                                                    <h4 className="mobile-lunch-title">Lunch Break</h4>
+                                                    <span className="mobile-lunch-time">{lunchLabel}</span>
+                                                    <h4 className="mobile-lunch-title">{lunchBreak ? lunchBreak.label : 'Lunch Break'}</h4>
                                                 </div>
                                             );
                                         }

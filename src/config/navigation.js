@@ -40,7 +40,8 @@ export const NAV_ITEMS = [
             className: `fa-solid fa-clipboard ${className || ''}`,
             style: { fontSize: size }
         }),
-        hideForAdmin: true
+        hideForAdmin: true,
+        hideOnNativeBottomNav: true
     },
     {
         id: 'complaints',
@@ -50,7 +51,8 @@ export const NAV_ITEMS = [
             className: `fa-solid fa-message ${className || ''}`,
             style: { fontSize: size }
         }),
-        hideForAdmin: true
+        hideForAdmin: true,
+        hideOnNativeBottomNav: true
     },
     {
         id: 'notices',
@@ -60,7 +62,8 @@ export const NAV_ITEMS = [
             className: `fa-solid fa-bell ${className || ''}`,
             style: { fontSize: size }
         }),
-        hideForAdmin: true
+        hideForAdmin: true,
+        hideOnNativeBottomNav: true
     },
     {
         id: 'offline-downloads',
@@ -71,6 +74,16 @@ export const NAV_ITEMS = [
             style: { fontSize: size }
         }),
         hideForAdmin: true
+    },
+    {
+        id: 'profile-mobile',
+        label: 'Profile',
+        path: '/profile',
+        icon: ({ size, className }) => React.createElement('i', {
+            className: `fa-solid fa-user ${className || ''}`,
+            style: { fontSize: size }
+        }),
+        nativeBottomNavOnly: true
     },
     // ── Student Only Items ──
 ];

@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import LogoutConfirm from '../Common/LogoutConfirm';
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
@@ -12,10 +12,11 @@ import { useTheme } from '../../context/ThemeContext';
 import { NAV_ITEMS, FACULTY_NAV_ITEMS } from '../../config/navigation';
 import './Sidebar.css';
 
-const Sidebar = ({ isOpen, onClose, isCollapsed, toggleCollapse }) => {
+const Sidebar = ({ isOpen, onClose, isCollapsed, toggleCollapse, isNativeMobileMenu }) => {
     const { user, logout, setIntentionalLogout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [hasUnreadStudentReply, setHasUnreadStudentReply] = useState(false);
 
@@ -99,6 +100,14 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, toggleCollapse }) => {
         }
 
         let items = NAV_ITEMS;
+        if (isNativeMobileMenu) {
+            // Only show Exams, Support, and Alerts in the native sidebar
+            items = items.filter(item => ['exams', 'complaints', 'notices'].includes(item.id));
+        } else {
+            // Desktop/Web sidebar shouldn't show mobile-only items
+            items = items.filter(item => item.id !== 'profile-mobile');
+        }
+
         if (userRole === 'admin') {
             items = items.filter(item => !item.hideForAdmin);
             items.push({
@@ -183,11 +192,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, toggleCollapse }) => {
                                 className={`nav-item ${isActive ? 'active' : ''} ${item.path === '/profile' ? 'user-profile-link' : ''}`}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    window.history.pushState({}, '', item.path);
-                                    window.dispatchEvent(new PopStateEvent('popstate'));
-                                    if (window.innerWidth < 768) {
+                                    if (onClose && (window.innerWidth < 768 || isNativeMobileMenu)) {
                                         onClose();
                                     }
+                                    navigate(item.path);
                                 }}
                                 title={item.label}
                             >
@@ -210,31 +218,34 @@ const Sidebar = ({ isOpen, onClose, isCollapsed, toggleCollapse }) => {
                 </nav>
 
                 {/* Footer / User Wrapper */}
-                <div className="sidebar-footer">
+                {!isNativeMobileMenu && (
+                    <div className="sidebar-footer">
 
 
-                    {/* Theme Toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        className="sidebar-footer-btn mb-2 theme-toggle-btn"
-                        title="Toggle Theme"
-                    >
-                        {theme === 'dark' ? <Sun size={20} className="shrink-0" /> : <Moon size={20} className="shrink-0" />}
-                        <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-2'}`}>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                    </button>
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="sidebar-footer-btn mb-2 theme-toggle-btn"
+                            title="Toggle Theme"
+                        >
+                            {theme === 'dark' ? <Sun size={20} className="shrink-0" /> : <Moon size={20} className="shrink-0" />}
+                            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-2'}`}>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                        </button>
 
-                    <button
-                        onClick={() => setIsLogoutModalOpen(true)}
-                        className="sidebar-footer-btn logout btn-click-effect"
-                        title="Sign Out"
-                    >
-                        <LogOut size={20} className="shrink-0" />
-                        <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-2'}`}>Sign Out</span>
-                    </button>
-                </div>
+                        <button
+                            onClick={() => setIsLogoutModalOpen(true)}
+                            className="sidebar-footer-btn logout btn-click-effect"
+                            title="Sign Out"
+                        >
+                            <LogOut size={20} className="shrink-0" />
+                            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto ml-2'}`}>Sign Out</span>
+                        </button>
+                    </div>
+                )}
             </aside>
         </>
     );
 };
 
 export default Sidebar;
+

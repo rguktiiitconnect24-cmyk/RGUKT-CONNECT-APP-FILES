@@ -1,0 +1,102 @@
+{
+  "academic_modules": {
+    "status": "completed",
+    "count": 28,
+    "lastDocId": "z1nMnsmiiscGaBXHD3nn"
+  },
+  "academic_units": {
+    "status": "completed",
+    "count": 0,
+    "lastDocId": null
+  },
+  "announcements": {
+    "status": "completed",
+    "count": 3,
+    "lastDocId": "xLDvjTnCCET8YpwNpcMA"
+  },
+  "app_config": {
+    "status": "completed",
+    "count": 1,
+    "lastDocId": "update_info"
+  },
+  "app_health": {
+    "status": "completed",
+    "count": 12,
+    "lastDocId": "y5Y7FN5gQcOqlbD3Ie0u5XVtzX53"
+  },
+  "attendance": {
+    "status": "completed",
+    "count": 24,
+    "lastDocId": "y9f71zN7pSYASEWQKqUX84NHszT2_2026-08-18_QP"
+  },
+  "attendance_rates": {
+    "status": "completed",
+    "count": 1074,
+    "lastDocId": "S241077"
+  },
+  "bookOrders": {
+    "status": "completed",
+    "count": 1,
+    "lastDocId": "PhpY2fqj6Yz4wgNas7JL"
+  },
+  "cgpa_records": {
+    "status": "completed",
+    "count": 1085,
+    "lastDocId": "S241077"
+  },
+  "courses": {
+    "status": "completed",
+    "count": 9,
+    "lastDocId": "Year-4_Sem-1"
+  },
+  "deletion_requests": {
+    "status": "completed",
+    "count": 2,
+    "lastDocId": "LxwIiWYZloibeGRSUIYi"
+  },
+  "faculties": {
+    "status": "completed",
+    "count": 5,
+    "lastDocId": "dHd7MrzHIAnttxlb8Ocw"
+  },
+  "feedbacks": {
+    "status": "completed",
+    "count": 2,
+    "lastDocId": "pFeptH5X0Xhl7kfgSjg6"
+  },
+  "notice_interactions": {
+    "status": "completed",
+    "count": 22,
+    "lastDocId": "y2QBIV8TtIEnVOfJQlXI"
+  },
+  "pdfs": {
+    "status": "completed",
+    "count": 118,
+    "lastDocId": "zqMAWzliXyHKsgkmcLux"
+  },
+  "resources": {
+    "status": "completed",
+    "count": 4,
+    "lastDocId": "m92a14bcoRFlfHZzwYT7"
+  },
+  "settings": {
+    "status": "completed",
+    "count": 4,
+    "lastDocId": "timetable_status"
+  },
+  "students_master": {
+    "status": "completed",
+    "count": 1090,
+    "lastDocId": "S241256"
+  },
+  "timetables": {
+    "status": "completed",
+    "count": 0,
+    "lastDocId": null
+  },
+  "update_history": {
+    "status": "completed",
+    "count": 75,
+    "lastDocId": "zuicrNfmiWOza6tStKZ0"
+  }
+}

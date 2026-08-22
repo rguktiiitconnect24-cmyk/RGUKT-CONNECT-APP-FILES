@@ -49,7 +49,8 @@ const getIconForSubject = (subject) => {
     return <BookOpen size={24} color="#4f46e5" />;
 };
 
-const LiveClassTracker = ({ schedule }) => {
+const LiveClassTracker = ({ schedule, timeSlots: propTimeSlots }) => {
+    const actualTimeSlots = propTimeSlots || timeSlots;
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -69,25 +70,25 @@ const LiveClassTracker = ({ schedule }) => {
     let nextClass = null;
 
     // Simplified logic to find current and next class
-    for (let i = 0; i < timeSlots.length; i++) {
-        const [startStr, endStr] = timeSlots[i].split(' - ');
+    for (let i = 0; i < actualTimeSlots.length; i++) {
+        const [startStr, endStr] = actualTimeSlots[i].split(' - ');
         const startTime = parseTime(startStr);
         const endTime = parseTime(endStr);
 
         if (currentTime >= startTime && currentTime <= endTime) {
             currentClass = {
                 subject: getFullSubjectName(todaySchedule[i]),
-                time: timeSlots[i],
+                time: actualTimeSlots[i],
                 endTime: endTime,
                 startTime: startTime
             };
             // Find next valid class
-            for (let j = i + 1; j < timeSlots.length; j++) {
+            for (let j = i + 1; j < actualTimeSlots.length; j++) {
                 if (todaySchedule[j] && todaySchedule[j] !== 'Free' && todaySchedule[j] !== '-') {
                     nextClass = {
                         subject: getFullSubjectName(todaySchedule[j]),
-                        time: timeSlots[j],
-                        startTime: parseTime(timeSlots[j].split(' - ')[0])
+                        time: actualTimeSlots[j],
+                        startTime: parseTime(actualTimeSlots[j].split(' - ')[0])
                     };
                     break;
                 }
@@ -98,7 +99,7 @@ const LiveClassTracker = ({ schedule }) => {
             if (todaySchedule[i] && todaySchedule[i] !== 'Free' && todaySchedule[i] !== '-') {
                 nextClass = {
                     subject: getFullSubjectName(todaySchedule[i]),
-                    time: timeSlots[i],
+                    time: actualTimeSlots[i],
                     startTime: startTime
                 };
                 break;

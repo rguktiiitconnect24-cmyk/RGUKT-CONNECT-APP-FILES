@@ -11,10 +11,6 @@ import './Complaints.css';
 const CATEGORIES = [
     { id: 'academic', label: 'Academic', icon: <BookOpen size={18} />, colorClass: 'purple' },
     { id: 'hostel', label: 'Hostel', icon: <Home size={18} />, colorClass: 'green' },
-    { id: 'mess', label: 'Mess', icon: <Coffee size={18} />, colorClass: 'orange' },
-    { id: 'transport', label: 'Transport', icon: <Truck size={18} />, colorClass: 'blue' },
-    { id: 'wifi', label: 'WiFi/Network', icon: <Wifi size={18} />, colorClass: 'purple' },
-    { id: 'facilities', label: 'Facilities', icon: <PenTool size={18} />, colorClass: 'green' },
     { id: 'exams', label: 'Examination', icon: <FileText size={18} />, colorClass: 'red' },
     { id: 'other', label: 'Other', icon: <MoreHorizontal size={18} />, colorClass: 'blue' }
 ];

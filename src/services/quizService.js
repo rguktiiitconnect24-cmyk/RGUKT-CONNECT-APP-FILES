@@ -187,6 +187,23 @@ export const getAttemptsForUser = async (studentId) => {
   }
 };
 
+export const getUserAttemptsForQuiz = async (studentId, quizId) => {
+  try {
+    const q = query(
+      collection(db, ATTEMPTS_COLLECTION),
+      where('studentId', '==', studentId),
+      where('quizId', '==', quizId)
+    );
+    const snapshot = await getDocs(q);
+    const attempts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Sort by score descending manually since Firestore requires a composite index for multiple fields
+    return attempts.sort((a, b) => b.score - a.score);
+  } catch (error) {
+    console.error('Error fetching user attempts for quiz:', error);
+    throw error;
+  }
+};
+
 export const getQuizLeaderboard = async (quizId, limitCount = 10) => {
   try {
     const q = query(

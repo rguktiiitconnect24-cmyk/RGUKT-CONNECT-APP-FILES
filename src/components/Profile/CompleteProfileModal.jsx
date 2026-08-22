@@ -6,7 +6,7 @@ import { nativeAuthService } from '../../services/nativeAuthService';
 import DOBSelector from '../Common/DOBSelector';
 import { Capacitor } from '@capacitor/core';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../config/firebase';
+import { db, pucDb } from '../../config/firebase';
 import { formatClassID } from '../../utils/formatUtils';
 import './CompleteProfileModal.css';
 
@@ -97,8 +97,14 @@ const CompleteProfileModal = ({ isOpen, user }) => {
                 setIsFetchingClass(true);
                 try {
                     const cleanId = formData.studentId.toUpperCase().replace(/^RGUKT-/i, '');
-                    const studentRef = doc(db, 'students_master', cleanId);
-                    const studentSnap = await getDoc(studentRef);
+                    let studentRef = doc(db, 'students_master', cleanId);
+                    let studentSnap = await getDoc(studentRef);
+                    
+                    if (!studentSnap.exists()) {
+                        studentRef = doc(pucDb, 'puc_students', cleanId);
+                        studentSnap = await getDoc(studentRef);
+                    }
+                    
                     if (studentSnap.exists()) {
                         const sData = studentSnap.data();
                         const fetchedClass = sData.classSection || sData.currentClass || '';

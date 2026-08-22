@@ -1,7 +1,7 @@
-import { ArrowLeft, Info, GraduationCap, TrendingUp, Clock, Calendar, Users, MapPin } from 'lucide-react';
+import { ArrowLeft, Info, GraduationCap, TrendingUp, Clock, Calendar, Users, MapPin, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { bulkUploadDb } from '../config/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { bulkUploadDb, db } from '../config/firebase';
+import { doc, getDoc, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
@@ -60,22 +60,81 @@ const AttendanceDetail = () => {
     };
 
     useEffect(() => {
+        let unsubscribeLive = null;
+
         const fetchAttendance = async () => {
-            if (!user?.studentId) return;
+            if (!user?.studentId && !user?.uid) return;
             try {
-                const id = user.studentId.toUpperCase().replace(/^RGUKT-/i, '').trim();
-                const docSnap = await getDoc(doc(bulkUploadDb, 'attendance_rates', id));
-                if (docSnap.exists()) {
-                    setAttendance(docSnap.data());
-                }
+                // 1. Fetch Subject-wise attendance from new system using onSnapshot for real-time
+                const attendanceRef = collection(db, 'attendance');
+                
+                // Query by student roll number (cleanId) since that's what faculty saves
+                const cleanId = String(user.studentId || user.rollNo || user.uid).toUpperCase().replace(/\s+/g, '').replace(/^RGUKT-/i, '');
+                const q = query(attendanceRef, where('studentId', '==', cleanId));
+                
+                unsubscribeLive = onSnapshot(q, async (snapshot) => {
+                    if (!snapshot.empty) {
+                        const records = snapshot.docs.map(d => d.data());
+                        
+                        const subjectMap = {};
+                        records.forEach(r => {
+                            if (!subjectMap[r.subjectId]) {
+                                subjectMap[r.subjectId] = { present: 0, total: 0 };
+                            }
+                            subjectMap[r.subjectId].total += 1;
+                            if (r.status === 'present') subjectMap[r.subjectId].present += 1;
+                        });
+                        
+                        let totalP = 0;
+                        let totalC = 0;
+                        for (const sub in subjectMap) {
+                            totalC += subjectMap[sub].total;
+                            totalP += subjectMap[sub].present;
+                        }
+                        
+                        setAttendance({
+                            isSubjectWise: true,
+                            subjectData: subjectMap,
+                            consolidated: totalC > 0 ? (totalP / totalC) * 100 : 0,
+                            totalConducted: totalC,
+                            totalPresent: totalP,
+                            className: `${records[0]?.year || ''} ${records[0]?.branch !== 'PUC' ? (records[0]?.branch || '') : ''} ${records[0]?.section ? 'Sec ' + records[0]?.section : ''}`.trim() || 'N/A',
+                            campus: 'RGUKT',
+                            group: records[0]?.branch || 'N/A',
+                            gender: user.gender || 'N/A',
+                            name: records[0]?.name || user.name || user.fullName || 'Student',
+                            studentId: records[0]?.rollNo || user.studentId || user.uid,
+                            updatedAt: new Date()
+                        });
+                        setLoading(false);
+                    } else {
+                        // 2. Fallback to legacy bulk upload system
+                        if (user.studentId) {
+                            const id = user.studentId.toUpperCase().replace(/^RGUKT-/i, '').trim();
+                            const docSnap = await getDoc(doc(bulkUploadDb, 'attendance_rates', id));
+                            if (docSnap.exists()) {
+                                setAttendance(docSnap.data());
+                            } else {
+                                setAttendance(null);
+                            }
+                        } else {
+                            setAttendance(null);
+                        }
+                        setLoading(false);
+                    }
+                });
             } catch (error) {
                 console.error("Error fetching attendance details:", error);
-            } finally {
                 setLoading(false);
             }
         };
+
         fetchAttendance();
-    }, [user?.studentId]);
+        
+        return () => {
+            if (unsubscribeLive) unsubscribeLive();
+        };
+    }, [user]);
 
     if (loading) {
         return (
@@ -200,6 +259,38 @@ const AttendanceDetail = () => {
                 </div>
             </div>
 
+            {/* Subject-Wise Attendance Breakdown */}
+            {attendance.isSubjectWise && (
+                <div className="subject-wise-section card" style={{ marginTop: '1.5rem' }}>
+                    <div className="section-title">
+                        <BookOpen size={18} />
+                        <h2>Subject-wise Breakdown</h2>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {Object.entries(attendance.subjectData).map(([subject, stats]) => {
+                            const percent = stats.total > 0 ? (stats.present / stats.total) * 100 : 0;
+                            const color = percent >= 75 ? '#10b981' : percent >= 65 ? '#f59e0b' : '#ef4444';
+                            
+                            return (
+                                <div key={subject} style={{ padding: '1rem', border: '1px solid #e2e8f0', borderRadius: '12px', background: '#f8fafc' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <span style={{ fontWeight: '600', color: '#1e293b' }}>{subject}</span>
+                                        <span style={{ fontWeight: '700', color: color }}>{percent.toFixed(1)}%</span>
+                                    </div>
+                                    <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.75rem' }}>
+                                        <div style={{ height: '100%', width: `${percent}%`, background: color, transition: 'width 0.3s' }}></div>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#64748b' }}>
+                                        <span>Present: {stats.present}</span>
+                                        <span>Total: {stats.total}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             <div className="academic-info-grid">
                 <div className="info-box-styled card">
                     <div className="styled-icon">
@@ -226,7 +317,7 @@ const AttendanceDetail = () => {
                     <Info size={14} />
                     <span>Minimum required attendance for exams is 75%</span>
                 </div>
-                <p className="update-ts">Last updated: {attendance.updatedAt?.toDate().toLocaleDateString()} at {attendance.updatedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                <p className="update-ts">Last updated: {(attendance.updatedAt?.toDate ? attendance.updatedAt.toDate() : new Date(attendance.updatedAt)).toLocaleDateString()} at {(attendance.updatedAt?.toDate ? attendance.updatedAt.toDate() : new Date(attendance.updatedAt)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
 
             {/* HIDDEN PDF TEMPLATE (University Transcript Style) */}

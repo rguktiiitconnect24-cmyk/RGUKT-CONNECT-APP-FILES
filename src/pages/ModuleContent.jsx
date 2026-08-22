@@ -8,9 +8,12 @@ import { PROGRAMS } from '../config/academics';
 import { fetchDynamicSubjects, getModuleById, getUnitById } from '../utils/academicsUtils';
 import { getEmbedUrl, getPdfEmbedUrl } from '../utils/videoUtils';
 import { pdfService } from '../services/pdfService';
-import { getQuestionsForQuiz } from '../services/quizService';
+import { getQuestionsForQuiz, getUserAttemptsForQuiz } from '../services/quizService';
+import { useAuth } from '../context/AuthContext';
+import AppAlert from '../components/Common/AppAlert';
 
 const ModuleContent = () => {
+    const { user } = useAuth();
     const { yearId, semesterId, subjectId, unitId, moduleId } = useParams();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -18,10 +21,13 @@ const ModuleContent = () => {
     const [currentModule, setCurrentModule] = useState(null);
     const [currentUnit, setCurrentUnit] = useState(null);
     const [currentProgram, setCurrentProgram] = useState(null);
+    const [currentSubject, setCurrentSubject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showQuiz, setShowQuiz] = useState(false);
     const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
     const [quizQuestions, setQuizQuestions] = useState(null);
+    const [pastAttemptToView, setPastAttemptToView] = useState(null);
+    const [alertConfig, setAlertConfig] = useState(null);
     const [showFab, setShowFab] = useState(false);
     const [viewMode, setViewMode] = useState('selection');
     const [activePdf, setActivePdf] = useState({ label: '', url: '', embedUrl: '' });
@@ -69,7 +75,7 @@ const ModuleContent = () => {
     }, [currentModule]);
 
     const handleGenerateQuiz = async () => {
-        if (quizQuestions) {
+        if (quizQuestions && !pastAttemptToView) {
             setShowQuiz(true);
             return;
         }
@@ -80,16 +86,47 @@ const ModuleContent = () => {
             
             // 2. If no questions exist, alert the user instead of using AI
             if (!questions || questions.length === 0) {
-                alert("No quiz questions have been added for this module yet. Please check back later.");
+                setAlertConfig({
+                    isOpen: true,
+                    title: "No MCQs Available",
+                    message: "No MCQ questions have been added for this module yet. Please check back later.",
+                    type: "warning",
+                    onClose: () => setAlertConfig(null)
+                });
                 setIsGeneratingQuiz(false);
                 return;
             }
-            
             setQuizQuestions(questions);
+
+            if (user) {
+                const attempts = await getUserAttemptsForQuiz(user.uid, currentModule.id);
+                if (attempts.length >= (quizSettings.maxRetakes || 3)) {
+                    setPastAttemptToView(attempts[0]);
+                    setAlertConfig({
+                        isOpen: true,
+                        title: "Attempt Limit Reached",
+                        message: "You have reached the maximum number of attempts for this MCQ. Showing your highest scoring attempt.",
+                        type: "info",
+                        onClose: () => {
+                            setAlertConfig(null);
+                            setShowQuiz(true);
+                        }
+                    });
+                    setIsGeneratingQuiz(false);
+                    return;
+                }
+            }
+            
             setShowQuiz(true);
         } catch (error) {
             console.error("Failed to fetch quiz from Firebase", error);
-            alert("Failed to load quiz from database. Please try again or check connection.");
+            setAlertConfig({
+                isOpen: true,
+                title: "Error",
+                message: "Failed to load MCQ from database. Please try again or check connection.",
+                type: "error",
+                onClose: () => setAlertConfig(null)
+            });
         } finally {
             setIsGeneratingQuiz(false);
         }
@@ -152,6 +189,7 @@ const ModuleContent = () => {
             }
             if (unitData) setCurrentUnit(unitData);
             if (hierarchy.program) setCurrentProgram(hierarchy.program);
+            if (hierarchy.subject) setCurrentSubject(hierarchy.subject);
 
             setLoading(false);
         };
@@ -282,7 +320,7 @@ const ModuleContent = () => {
                                     <Lightbulb size={28} color="#ffffff" className="animate-pulse" style={{ animationDuration: '3s' }} />
                                 </div>
                                 <h3 className="text-2xl md:text-3xl font-bold mb-3" style={{ color: 'var(--color-text-main)' }}>Ready to test your knowledge?</h3>
-                                <p className="text-lg max-w-lg mx-auto md:mx-0" style={{ color: 'var(--color-text-muted)' }}>Take a quick 15-minute quiz to solidify your understanding of this topic and track your progress.</p>
+                                <p className="text-lg max-w-lg mx-auto md:mx-0" style={{ color: 'var(--color-text-muted)' }}>Take a quick 15-minute MCQ to solidify your understanding of this topic and track your progress.</p>
                             </div>
                             
                             <div className="shrink-0 flex flex-col items-center">
@@ -302,11 +340,11 @@ const ModuleContent = () => {
                                 >
                                     {isGeneratingQuiz ? (
                                         <>
-                                            <RefreshCw className="animate-spin" size={20} /> Preparing Quiz...
+                                            <RefreshCw className="animate-spin" size={20} /> Preparing MCQ...
                                         </>
                                     ) : (
                                         <>
-                                            Start Unit Quiz <ArrowRight size={20} />
+                                            Start Unit MCQ <ArrowRight size={20} />
                                         </>
                                     )}
                                 </button>
@@ -439,14 +477,21 @@ const ModuleContent = () => {
 
             {/* Quiz Overlay */}
             {showQuiz && quizQuestions && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto" style={{ zIndex: 60000 }}>
-                    <div className="w-full max-w-3xl my-auto animate-fade-in relative z-10 pt-16 md:pt-0">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-12">
+                    <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm" onClick={() => setShowQuiz(false)}></div>
+                    <div className="relative z-10 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl bg-white rounded-3xl" style={{ animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}>
                         <EmbeddedQuiz 
                             moduleId={currentModule.id} 
-                            moduleTitle={currentModule.label}
+                            moduleTitle={currentModule.label} 
                             questions={quizQuestions} 
-                            onClose={() => setShowQuiz(false)} 
+                            onClose={() => {
+                                setShowQuiz(false);
+                                setPastAttemptToView(null);
+                            }} 
                             passingPercentage={quizSettings.passingPercentage}
+                            pastAttempt={pastAttemptToView}
+                            semester={semesterId}
+                            subject={currentSubject?.label || subjectId}
                         />
                     </div>
                 </div>
@@ -458,10 +503,21 @@ const ModuleContent = () => {
                     onClick={handleGenerateQuiz}
                     disabled={isGeneratingQuiz}
                     className="fixed bottom-24 right-6 z-50 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-2xl shadow-indigo-500/50 flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 animate-bounce-short"
-                    title="Take Unit Quiz"
+                    title="Take Unit MCQ"
                 >
                     {isGeneratingQuiz ? <RefreshCw className="animate-spin" size={24} /> : <Lightbulb size={24} />}
                 </button>
+            )}
+
+            {/* Custom App Alert */}
+            {alertConfig && (
+                <AppAlert
+                    isOpen={alertConfig.isOpen}
+                    onClose={alertConfig.onClose}
+                    title={alertConfig.title}
+                    message={alertConfig.message}
+                    type={alertConfig.type}
+                />
             )}
         </div>
     );

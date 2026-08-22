@@ -3597,15 +3597,27 @@ input:checked+.slider:before {
 }
 
 .border-base {
-    stroke: rgba(139, 92, 246, 0.85);
-    stroke-width: 2px;
+    stroke: rgba(139, 92, 246, 0.8);
+    stroke-width: 1.5px;
     rx: 28px;
     ry: 28px;
-    stroke-dasharray: 6 6;
+    stroke-dasharray: 200 40;
+    animation: elegantShimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes elegantShimmer {
+    0% {
+        stroke-dashoffset: 240;
+        opacity: 0.3;
+    }
+    100% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
 }
 
 [data-theme='light'] .border-base {
-    stroke: rgba(139, 92, 246, 0.85);
+    stroke: rgba(139, 92, 246, 0.8);
 }
 
 .border-streak {

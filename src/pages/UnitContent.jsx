@@ -17,8 +17,12 @@ import {
   getQuestionsForQuiz,
   getPendingQuiz,
   deletePendingQuiz,
+  getUserAttemptsForQuiz
 } from "../services/quizService";
+import { doc, getDoc } from "firebase/firestore";
+import { contentDb as db } from "../config/firebase";
 import { useAuth } from "../context/AuthContext";
+import AppAlert from "../components/Common/AppAlert";
 import "./UnitContent.css";
 
 const UnitContent = () => {
@@ -33,10 +37,12 @@ const UnitContent = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState(null);
+  const [pastAttemptToView, setPastAttemptToView] = useState(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [pendingQuizData, setPendingQuizData] = useState(null);
   const [quizError, setQuizError] = useState(null);
+  const [alertConfig, setAlertConfig] = useState(null);
   const [isModulesExpanded, setIsModulesExpanded] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState(null);
 
@@ -231,7 +237,7 @@ const UnitContent = () => {
   const handleDeletePendingQuiz = async () => {
     if (
       window.confirm(
-        "Are you sure you want to delete your pending quiz progress?"
+        "Are you sure you want to delete your pending MCQ progress?"
       )
     ) {
       const uniqueModuleId = `${subjectId}_${currentUnit.id}`;
@@ -256,10 +262,10 @@ const UnitContent = () => {
     }
     setQuizError(null);
     const uniqueModuleId = `${subjectId}_${currentUnit.id}`;
-    if (pendingQuizData) {
+    if (pendingQuizData && !pastAttemptToView) {
       if (
         !window.confirm(
-          `Starting a new quiz will discard your pending progress for ${selectedDifficulty} Stage. Do you want to continue?`
+          `Starting a new MCQ will discard your pending progress for ${selectedDifficulty} Stage. Do you want to continue?`
         )
       ) {
         return;
@@ -292,11 +298,15 @@ const UnitContent = () => {
       }
 
       if (!questions || questions.length === 0) {
-        setQuizError(
-          "No MCQs have been added for this unit yet. Please check back later."
-        );
-        setIsGeneratingQuiz(false);
-        return;
+          setAlertConfig({
+              isOpen: true,
+              title: "No MCQs Available",
+              message: "No MCQ questions have been added for this unit yet. Please check back later.",
+              type: "warning",
+              onClose: () => setAlertConfig(null)
+          });
+          setIsGeneratingQuiz(false);
+          return;
       }
 
       // Filter by selected difficulty
@@ -313,12 +323,57 @@ const UnitContent = () => {
       }
 
       setQuizQuestions(filteredQuestions);
+
+      if (user) {
+        const attempts = await getUserAttemptsForQuiz(user.uid, uniqueModuleId);
+        
+        let maxRetakes = 3; // default
+        try {
+          const docRef = doc(db, 'quiz_settings', uniqueModuleId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().maxRetakes) {
+            maxRetakes = docSnap.data().maxRetakes;
+          } else {
+             // Try legacy unit ID just in case
+             const legacyRef = doc(db, 'quiz_settings', currentUnit.id);
+             const legacySnap = await getDoc(legacyRef);
+             if (legacySnap.exists() && legacySnap.data().maxRetakes) {
+               maxRetakes = legacySnap.data().maxRetakes;
+             }
+          }
+        } catch (e) {
+           console.error("Failed to fetch quiz settings for maxRetakes", e);
+        }
+
+        if (attempts.length >= maxRetakes) {
+          setPastAttemptToView(attempts[0]);
+          setAlertConfig({
+              isOpen: true,
+              title: "Attempt Limit Reached",
+              message: "You have reached the maximum number of attempts for this MCQ. Showing your highest scoring attempt.",
+              type: "info",
+              onClose: () => {
+                  setAlertConfig(null);
+                  setShowQuiz(true);
+              }
+          });
+          setIsGeneratingQuiz(false);
+          return;
+        } else {
+          setPastAttemptToView(null);
+        }
+      }
+
       setShowQuiz(true);
     } catch (error) {
       console.error("Failed to fetch quiz from Firebase", error);
-      setQuizError(
-        "Failed to load quiz from database. Please try again or check connection."
-      );
+      setAlertConfig({
+          isOpen: true,
+          title: "Error",
+          message: "Failed to load MCQ from database. Please try again or check connection.",
+          type: "error",
+          onClose: () => setAlertConfig(null)
+      });
     } finally {
       setIsGeneratingQuiz(false);
     }
@@ -908,7 +963,7 @@ const UnitContent = () => {
                         fontWeight: "bold",
                       }}
                     >
-                      Pending Quiz Available
+                      Pending MCQ Available
                     </span>
                     <span
                       style={{
@@ -980,29 +1035,44 @@ const UnitContent = () => {
             }}
           >
             <div
-              style={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-                zIndex: 10,
-                display: "flex",
-                flexDirection: "column",
+              className="uc-quiz-overlay"
+              onClick={() => {
+                setShowQuiz(false);
+                setPastAttemptToView(null);
               }}
-              className="animate-fade-in"
-            >
+            ></div>
+            <div className="uc-quiz-modal">
               <EmbeddedQuiz
                 moduleId={`${subjectId}_${currentUnit.id}`}
-                moduleTitle={`${currentUnit.label} (${selectedDifficulty} Stage)`}
+                moduleTitle={`${contextData.subject?.label || "Subject"} - ${
+                  currentUnit.label
+                } (${selectedDifficulty})`}
                 questions={quizQuestions}
-                onClose={() => setShowQuiz(false)}
-                passingPercentage={40}
+                onClose={() => {
+                  setShowQuiz(false);
+                  setPastAttemptToView(null);
+                }}
                 difficulty={selectedDifficulty}
-                initialState={pendingQuizData}
+                initialState={pendingQuizData?.progressData}
+                pastAttempt={pastAttemptToView}
+                semester={semesterId}
+                subject={contextData.subject?.label || subjectId}
               />
             </div>
           </div>,
           document.body
         )}
+        
+      {/* Custom App Alert */}
+      {alertConfig && (
+        <AppAlert
+          isOpen={alertConfig.isOpen}
+          onClose={alertConfig.onClose}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          type={alertConfig.type}
+        />
+      )}
     </div>
   );
 };

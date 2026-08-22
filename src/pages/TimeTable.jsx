@@ -81,8 +81,7 @@ const TimeTable = () => {
         { start: '12:40', end: '13:40', label: 'Lunch Break', type: 'break' },
         { start: '13:40', end: '14:40', label: 'P5', type: 'period', index: 4 },
         { start: '14:40', end: '15:40', label: 'P6', type: 'period', index: 5 },
-        { start: '15:40', end: '15:50', label: 'Short Break', type: 'break' },
-        { start: '15:50', end: '16:50', label: 'P7', type: 'period', index: 6 }
+        { start: '15:40', end: '16:40', label: 'P7', type: 'period', index: 6 }
     ];
     const [timelineConfig, setTimelineConfig] = React.useState(defaultTimeline);
 
@@ -104,7 +103,7 @@ const TimeTable = () => {
             let cls = user?.currentClass || '';
 
             const cacheKey = `timetable_full_${cls || user?.studentId || 'unknown'}`;
-            const cached = sessionStorage.getItem(cacheKey);
+            const cached = null; // sessionStorage.getItem(cacheKey); disabled to allow real-time updates
             let parsedCache = null;
             if (cached) {
                 try {
@@ -272,7 +271,7 @@ const TimeTable = () => {
 
         const fetchHolidayStatus = async () => {
             const cacheKey = 'timetable_holiday_status';
-            const cached = sessionStorage.getItem(cacheKey);
+            const cached = null; // sessionStorage.getItem(cacheKey); disabled to allow real-time updates
             if (cached) {
                 setHolidayStatus(JSON.parse(cached));
                 return;
@@ -537,11 +536,11 @@ const TimeTable = () => {
                                      </div>
 
                                      <div className="screen-only-component">
-                                         <LiveClassTracker schedule={schedule} />
+                                         <LiveClassTracker schedule={schedule} timeSlots={timeSlots} />
                                      </div>
 
                                      <div className="md:hidden screen-only-component">
-                                         <MobileTimetable schedule={schedule} selectedDay={selectedDayOfWeek} timeSlots={timeSlots} />
+                                         <MobileTimetable schedule={schedule} selectedDay={selectedDayOfWeek} timeSlots={timeSlots} breaks={breaks} />
                                      </div>
 
                                      <div className="hidden md:block timetable-grid-wrapper">
