@@ -108,7 +108,7 @@ export default defineConfig({
         }
       }
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 3000,
     minify: 'terser',
     terserOptions: {
       compress: {

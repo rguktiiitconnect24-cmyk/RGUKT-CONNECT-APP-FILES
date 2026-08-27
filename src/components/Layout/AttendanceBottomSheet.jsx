@@ -1,9 +1,9 @@
-import { X, User, GraduationCap, AlertCircle, Info, PieChart, Share2, Download } from 'lucide-react';
+import { X, User, GraduationCap, AlertCircle, Info, PieChart, Share2, Download, BookOpen } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { bulkUploadDb, db } from '../../config/firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { bulkUploadDb, db, attendanceDb } from '../../config/firebase';
+import { doc, getDoc, collection, query, where, getDocs, collectionGroup } from 'firebase/firestore';
 import { formatAttendancePercent, normalizeAttendanceValue } from '../../utils/formatUtils';
 import './AttendanceBottomSheet.css';
 
@@ -55,23 +55,29 @@ const AttendanceBottomSheet = ({ isOpen, onClose, user }) => {
         const element = document.getElementById('pdf-report-template-sheet');
         if (!element) return;
         
-        // Temporarily show for capture, but keep it off-screen
-        element.style.display = 'block';
-        
         const opt = {
             margin: [0.5, 0.5],
             filename: `Attendance_Report_${attendance.studentId}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { 
                 scale: 3,
                 useCORS: true,
-                letterRendering: true
+                letterRendering: true,
+                windowWidth: 800,
+                width: 794
             },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.style.display = 'none';
+        html2pdf().set(opt).from(element).outputPdf('blob').then(function(pdfBlob) {
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `Attendance_Report_${attendance.studentId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
         });
     };
 
@@ -83,7 +89,7 @@ const AttendanceBottomSheet = ({ isOpen, onClose, user }) => {
         }
         try {
             // 1. New Live System
-            const attendanceRef = collection(db, 'attendance');
+            const attendanceRef = collectionGroup(attendanceDb, 'records');
             const cleanId = String(user.studentId || user.rollNo || user.uid).toUpperCase().replace(/\s+/g, '').replace(/^RGUKT-/i, '');
             const q = query(attendanceRef, where('studentId', '==', cleanId));
             const snapshot = await getDocs(q);
@@ -283,6 +289,106 @@ const AttendanceBottomSheet = ({ isOpen, onClose, user }) => {
                     )}
                 </div>
             </div>
+
+            {/* HIDDEN PDF TEMPLATE (Curvy Table Style) */}
+            {/* HIDDEN PDF TEMPLATE (Curvy Table Style) */}
+            {attendance && (
+                <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '794px', zIndex: -1 }}>
+                    <div id="pdf-report-template-sheet" style={{ width: '794px', minHeight: '1123px', background: '#ffffff', padding: '25px 60px 50px 60px', color: '#0f172a', fontFamily: 'Arial, sans-serif', position: 'relative', boxSizing: 'border-box' }}>
+                        
+                        {/* HEADER */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '40px', borderBottom: '2px solid #f1f5f9', paddingBottom: '20px' }}>
+                            <h1 style={{ fontSize: '32px', fontWeight: '800', margin: '0 0 6px 0', color: '#1e3a8a', letterSpacing: '0.02em' }}>RGUKT CONNECT</h1>
+                            <h2 style={{ fontSize: '15px', fontWeight: '600', margin: 0, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Student Attendance Report</h2>
+                        </div>
+
+                        {/* STUDENT DETAILS TABLE */}
+                        <div style={{ marginBottom: '35px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderLeft: '4px solid #3b82f6', paddingLeft: '10px', display: 'flex', alignItems: 'center', height: '18px' }}>Student Profile</div>
+                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', backgroundColor: '#fff' }}>
+                                    <tbody>
+                                        <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                            <th style={{ padding: '16px 20px', textAlign: 'left', width: '30%', backgroundColor: '#f8fafc', color: '#475569', fontWeight: '600', borderRight: '1px solid #e2e8f0' }}>Student ID</th>
+                                            <td style={{ padding: '16px 20px', width: '70%', color: '#0f172a', fontWeight: '800', fontSize: '15px' }}>{studentId}</td>
+                                        </tr>
+                                        <tr>
+                                            <th style={{ padding: '16px 20px', textAlign: 'left', backgroundColor: '#f8fafc', color: '#475569', fontWeight: '600', borderRight: '1px solid #e2e8f0' }}>Full Name</th>
+                                            <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: '800', fontSize: '15px' }}>{name}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* OVERALL ATTENDANCE TABLE */}
+                        <div style={{ marginBottom: '35px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderLeft: '4px solid #3b82f6', paddingLeft: '10px', display: 'flex', alignItems: 'center', height: '18px' }}>Consolidated Overview</div>
+                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', backgroundColor: '#fff' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
+                                            <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Conducted</th>
+                                            <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Present</th>
+                                            <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Absent</th>
+                                            <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e3a8a', fontWeight: '800', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style={{ padding: '18px 20px', textAlign: 'center', fontWeight: '600', color: '#334155', fontSize: '15px', borderRight: '1px solid #e2e8f0' }}>{totalConducted}</td>
+                                            <td style={{ padding: '18px 20px', textAlign: 'center', color: '#059669', fontWeight: '800', fontSize: '15px', borderRight: '1px solid #e2e8f0' }}>{totalPresent}</td>
+                                            <td style={{ padding: '18px 20px', textAlign: 'center', color: '#dc2626', fontWeight: '800', fontSize: '15px', borderRight: '1px solid #e2e8f0' }}>{absentCount}</td>
+                                            <td style={{ padding: '18px 20px', textAlign: 'center', fontWeight: '800', fontSize: '18px', color: '#1e3a8a' }}>{formatAttendancePercent(consolidated)}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* SUBJECT-WISE BREAKDOWN */}
+                        {attendance.isSubjectWise && (
+                            <div style={{ marginBottom: '40px' }}>
+                                <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderLeft: '4px solid #3b82f6', paddingLeft: '10px', display: 'flex', alignItems: 'center', height: '18px' }}>Subject-Wise Breakdown</div>
+                                <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', backgroundColor: '#fff' }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
+                                                <th style={{ padding: '14px 20px', textAlign: 'left', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Subject Name</th>
+                                                <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Conducted</th>
+                                                <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Present</th>
+                                                <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Absent</th>
+                                                <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e3a8a', fontWeight: '800', letterSpacing: '0.05em' }}>Percentage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.entries(attendance.subjectData).map(([subject, stats], index, array) => {
+                                                const percent = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : '0.0';
+                                                const isLast = index === array.length - 1;
+                                                return (
+                                                    <tr key={subject} style={{ borderBottom: isLast ? 'none' : '1px solid #f1f5f9' }}>
+                                                        <td style={{ padding: '14px 20px', fontWeight: '600', color: '#334155', borderRight: '1px solid #e2e8f0' }}>{subject}</td>
+                                                        <td style={{ padding: '14px 20px', textAlign: 'center', color: '#64748b', fontWeight: '500', borderRight: '1px solid #e2e8f0' }}>{stats.total}</td>
+                                                        <td style={{ padding: '14px 20px', textAlign: 'center', color: '#059669', fontWeight: '700', borderRight: '1px solid #e2e8f0' }}>{stats.present}</td>
+                                                        <td style={{ padding: '14px 20px', textAlign: 'center', color: '#dc2626', fontWeight: '700', borderRight: '1px solid #e2e8f0' }}>{stats.total - stats.present}</td>
+                                                        <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '800', color: '#0f172a' }}>{percent}%</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* FOOTER */}
+                        <div style={{ position: 'absolute', bottom: '40px', left: '60px', right: '60px', borderTop: '2px solid #f1f5f9', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>
+                            <span>Generated by RGUKT Connect</span>
+                            <span>Date: {new Date().toLocaleDateString('en-GB')}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 

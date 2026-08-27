@@ -9,8 +9,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Users, FileText, Clock, Award, Zap, LogOut, Settings, GraduationCap, ClipboardList, MessageSquare, ArrowUpRight, Calendar, Pin, ChevronRight } from 'lucide-react';
-import { db, bulkUploadDb } from '../../config/firebase';
-import { doc, getDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db, bulkUploadDb, attendanceDb } from '../../config/firebase';
+import { doc, getDoc, collection, query, where, onSnapshot, collectionGroup } from 'firebase/firestore';
 import { parseTimeRange, formatAttendancePercent } from '../../utils/formatUtils';
 import { noticeService } from '../../services/noticeService';
 import { PROGRAMS } from '../../config/academics';
@@ -261,7 +261,7 @@ const StudentDashboard = ({ user }) => {
             }
             try {
                 // 1. Live Attendance from new system
-                const attendanceRef = collection(db, 'attendance');
+                const attendanceRef = collectionGroup(attendanceDb, 'records');
                 const cleanId = String(user.studentId || user.rollNo || user.uid).toUpperCase().replace(/\s+/g, '').replace(/^RGUKT-/i, '');
                 const q = query(attendanceRef, where('studentId', '==', cleanId));
                 

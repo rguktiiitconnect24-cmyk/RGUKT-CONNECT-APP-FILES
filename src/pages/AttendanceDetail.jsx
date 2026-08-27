@@ -1,7 +1,7 @@
 import { ArrowLeft, Info, GraduationCap, TrendingUp, Clock, Calendar, Users, MapPin, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { bulkUploadDb, db } from '../config/firebase';
-import { doc, getDoc, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
+import { bulkUploadDb, db, attendanceDb } from '../config/firebase';
+import { doc, getDoc, collection, query, where, getDocs, onSnapshot, collectionGroup } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import html2pdf from 'html2pdf.js';
@@ -39,23 +39,31 @@ const AttendanceDetail = () => {
         if (!attendance) return;
         
         const element = document.getElementById('pdf-report-template');
-        // Temporarily show for capture, but keep it off-screen
-        element.style.display = 'block';
+        if (!element) return;
         
         const opt = {
             margin: [0.5, 0.5],
             filename: `Attendance_Report_${attendance.studentId}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { 
-                scale: 3, // Higher scale for premium look
+                scale: 3,
                 useCORS: true,
-                letterRendering: true
+                letterRendering: true,
+                windowWidth: 800,
+                width: 794
             },
             jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.style.display = 'none';
+        html2pdf().set(opt).from(element).outputPdf('blob').then(function(pdfBlob) {
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `Attendance_Report_${attendance.studentId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
         });
     };
 
@@ -66,7 +74,7 @@ const AttendanceDetail = () => {
             if (!user?.studentId && !user?.uid) return;
             try {
                 // 1. Fetch Subject-wise attendance from new system using onSnapshot for real-time
-                const attendanceRef = collection(db, 'attendance');
+                const attendanceRef = collectionGroup(attendanceDb, 'records');
                 
                 // Query by student roll number (cleanId) since that's what faculty saves
                 const cleanId = String(user.studentId || user.rollNo || user.uid).toUpperCase().replace(/\s+/g, '').replace(/^RGUKT-/i, '');
@@ -320,130 +328,100 @@ const AttendanceDetail = () => {
                 <p className="update-ts">Last updated: {(attendance.updatedAt?.toDate ? attendance.updatedAt.toDate() : new Date(attendance.updatedAt)).toLocaleDateString()} at {(attendance.updatedAt?.toDate ? attendance.updatedAt.toDate() : new Date(attendance.updatedAt)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
 
-            {/* HIDDEN PDF TEMPLATE (University Transcript Style) */}
-            <div id="pdf-report-template" style={{ display: 'none', width: '794px', minHeight: '1123px', background: 'white', padding: '50px 60px', color: '#1f2a44', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-                {/* 1. HEADER */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingBottom: '10px' }}>
-                    <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '32px', height: '32px', backgroundColor: '#1f2a44', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                                <GraduationCap size={20} />
+            {/* HIDDEN PDF TEMPLATE (Curvy Table Style) */}
+            <div style={{ position: 'absolute', top: '-9999px', left: '-9999px', width: '794px', zIndex: -1 }}>
+                <div id="pdf-report-template" style={{ width: '794px', minHeight: '1123px', background: '#ffffff', padding: '25px 60px 50px 60px', color: '#0f172a', fontFamily: 'Arial, sans-serif', position: 'relative', boxSizing: 'border-box' }}>
+                    
+                    {/* HEADER */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '40px', borderBottom: '2px solid #f1f5f9', paddingBottom: '20px' }}>
+                        <h1 style={{ fontSize: '32px', fontWeight: '800', margin: '0 0 6px 0', color: '#1e3a8a', letterSpacing: '0.02em' }}>RGUKT CONNECT</h1>
+                        <h2 style={{ fontSize: '15px', fontWeight: '600', margin: 0, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Student Attendance Report</h2>
+                    </div>
+
+                    {/* STUDENT DETAILS TABLE */}
+                    <div style={{ marginBottom: '35px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderLeft: '4px solid #3b82f6', paddingLeft: '10px', display: 'flex', alignItems: 'center', height: '18px' }}>Student Profile</div>
+                        <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', backgroundColor: '#fff' }}>
+                                <tbody>
+                                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                        <th style={{ padding: '16px 20px', textAlign: 'left', width: '30%', backgroundColor: '#f8fafc', color: '#475569', fontWeight: '600', borderRight: '1px solid #e2e8f0' }}>Student ID</th>
+                                        <td style={{ padding: '16px 20px', width: '70%', color: '#0f172a', fontWeight: '800', fontSize: '15px' }}>{attendance.studentId}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style={{ padding: '16px 20px', textAlign: 'left', backgroundColor: '#f8fafc', color: '#475569', fontWeight: '600', borderRight: '1px solid #e2e8f0' }}>Full Name</th>
+                                        <td style={{ padding: '16px 20px', color: '#0f172a', fontWeight: '800', fontSize: '15px' }}>{name}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* OVERALL ATTENDANCE TABLE */}
+                    <div style={{ marginBottom: '35px' }}>
+                        <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderLeft: '4px solid #3b82f6', paddingLeft: '10px', display: 'flex', alignItems: 'center', height: '18px' }}>Consolidated Overview</div>
+                        <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', backgroundColor: '#fff' }}>
+                                <thead>
+                                    <tr style={{ backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
+                                        <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Conducted</th>
+                                        <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Present</th>
+                                        <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Absent</th>
+                                        <th style={{ padding: '16px 20px', textAlign: 'center', color: '#1e3a8a', fontWeight: '800', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ padding: '18px 20px', textAlign: 'center', fontWeight: '600', color: '#334155', fontSize: '15px', borderRight: '1px solid #e2e8f0' }}>{totalConducted}</td>
+                                        <td style={{ padding: '18px 20px', textAlign: 'center', color: '#059669', fontWeight: '800', fontSize: '15px', borderRight: '1px solid #e2e8f0' }}>{totalPresent}</td>
+                                        <td style={{ padding: '18px 20px', textAlign: 'center', color: '#dc2626', fontWeight: '800', fontSize: '15px', borderRight: '1px solid #e2e8f0' }}>{absentCount}</td>
+                                        <td style={{ padding: '18px 20px', textAlign: 'center', fontWeight: '800', fontSize: '18px', color: '#1e3a8a' }}>{formatAttendancePercent(consolidated)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* SUBJECT-WISE BREAKDOWN */}
+                    {attendance.isSubjectWise && (
+                        <div style={{ marginBottom: '40px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '12px', color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '1px', borderLeft: '4px solid #3b82f6', paddingLeft: '10px', display: 'flex', alignItems: 'center', height: '18px' }}>Subject-Wise Breakdown</div>
+                            <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', backgroundColor: '#fff' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#eff6ff', borderBottom: '1px solid #bfdbfe' }}>
+                                            <th style={{ padding: '14px 20px', textAlign: 'left', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Subject Name</th>
+                                            <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Conducted</th>
+                                            <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Present</th>
+                                            <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e40af', fontWeight: '700', letterSpacing: '0.05em', borderRight: '1px solid #bfdbfe' }}>Absent</th>
+                                            <th style={{ padding: '14px 20px', textAlign: 'center', color: '#1e3a8a', fontWeight: '800', letterSpacing: '0.05em' }}>Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {Object.entries(attendance.subjectData).map(([subject, stats], index, array) => {
+                                            const percent = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : '0.0';
+                                            const isLast = index === array.length - 1;
+                                            return (
+                                                <tr key={subject} style={{ borderBottom: isLast ? 'none' : '1px solid #f1f5f9' }}>
+                                                    <td style={{ padding: '14px 20px', fontWeight: '600', color: '#334155', borderRight: '1px solid #e2e8f0' }}>{subject}</td>
+                                                    <td style={{ padding: '14px 20px', textAlign: 'center', color: '#64748b', fontWeight: '500', borderRight: '1px solid #e2e8f0' }}>{stats.total}</td>
+                                                    <td style={{ padding: '14px 20px', textAlign: 'center', color: '#059669', fontWeight: '700', borderRight: '1px solid #e2e8f0' }}>{stats.present}</td>
+                                                    <td style={{ padding: '14px 20px', textAlign: 'center', color: '#dc2626', fontWeight: '700', borderRight: '1px solid #e2e8f0' }}>{stats.total - stats.present}</td>
+                                                    <td style={{ padding: '14px 20px', textAlign: 'center', fontWeight: '800', color: '#0f172a' }}>{percent}%</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
-                            <h2 style={{ fontSize: '15px', fontWeight: '800', margin: 0, letterSpacing: '0.05em' }}>RGUKT CONNECT</h2>
                         </div>
-                        <p style={{ fontSize: '10px', color: '#6b7280', margin: '4px 0 0 0', fontWeight: '500' }}>LEARN.CONNECT.ACHIEVE</p>
+                    )}
+
+                    {/* FOOTER */}
+                    <div style={{ position: 'absolute', bottom: '40px', left: '60px', right: '60px', borderTop: '2px solid #f1f5f9', paddingTop: '15px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', fontWeight: '500' }}>
+                        <span>Generated by RGUKT Connect</span>
+                        <span>Date: {new Date().toLocaleDateString('en-GB')}</span>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '8px', fontWeight: '800', padding: '2px 8px', border: '1.5px solid #1f2a44', display: 'inline-block', marginBottom: '8px', borderRadius: '2px' }}>
-                            OFFICIAL RECORD
-                        </div>
-                        <p style={{ fontSize: '9px', color: '#6b7280', margin: 0 }}>Generated on: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                        <p style={{ fontSize: '9px', color: '#6b7280', margin: 0 }}>Time: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                    </div>
-                </div>
-                <div style={{ height: '1.5px', backgroundColor: '#1f2a44', width: '100%', marginBottom: '40px' }}></div>
-
-                {/* 2. TITLE SECTION */}
-                <div style={{ marginBottom: '50px' }}>
-                    <h1 style={{ fontSize: '20px', fontWeight: '800', margin: '0 0 5px 0', letterSpacing: '0.1em' }}>ATTENDANCE REPORT</h1>
-                    <p style={{ fontSize: '11px', color: '#6b7280', margin: 0 }}>Student Attendance Summary</p>
-                </div>
-
-                {/* 3. MAIN ATTENDANCE HIGHLIGHT */}
-                <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-                    <h2 style={{ fontSize: '80px', fontWeight: '800', margin: 0, lineHeight: 1 }}>{formatAttendancePercent(consolidated)}</h2>
-                    <p style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', marginTop: '15px', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Overall Attendance</p>
-                    <div style={{ width: '120px', height: '1px', backgroundColor: '#f59e0b', margin: '20px auto 0' }}></div>
-                </div>
-
-                {/* 4. STATISTICS TABLE */}
-                <div style={{ marginBottom: '60px' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '1.5px solid #1f2a44' }}>
-                                <th style={{ textAlign: 'left', padding: '12px 0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Metric</th>
-                                <th style={{ textAlign: 'right', padding: '12px 0', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '12px 0', color: '#4b5563' }}>Classes Present</td>
-                                <td style={{ textAlign: 'right', padding: '12px 0', fontWeight: '700' }}>{formatAttendancePercent(totalPresent)}</td>
-                            </tr>
-                            <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '12px 0', color: '#4b5563' }}>Classes Absent</td>
-                                <td style={{ textAlign: 'right', padding: '12px 0', fontWeight: '700' }}>{formatAttendancePercent(absentCount)}</td>
-                            </tr>
-                            <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                <td style={{ padding: '12px 0', color: '#4b5563' }}>Total Classes Conducted</td>
-                                <td style={{ textAlign: 'right', padding: '12px 0', fontWeight: '700' }}>{formatAttendancePercent(totalConducted)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* 5. STUDENT INFORMATION */}
-                <div style={{ marginBottom: '60px' }}>
-                    <h3 style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '20px', color: '#1f2a44' }}>Student Information</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px' }}>
-                        <table style={{ borderCollapse: 'collapse', fontSize: '12px' }}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ color: '#6b7280', padding: '6px 0', width: '100px' }}>Full Name</td>
-                                    <td style={{ color: '#6b7280', width: '20px' }}>:</td>
-                                    <td style={{ fontWeight: '700', padding: '6px 0' }}>{name}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ color: '#6b7280', padding: '6px 0' }}>Gender</td>
-                                    <td style={{ color: '#6b7280' }}>:</td>
-                                    <td style={{ fontWeight: '700', padding: '6px 0' }}>{gender || 'N/A'}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ color: '#6b7280', padding: '6px 0' }}>Class / Section</td>
-                                    <td style={{ color: '#6b7280' }}>:</td>
-                                    <td style={{ fontWeight: '700', padding: '6px 0' }}>{className}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style={{ borderCollapse: 'collapse', fontSize: '12px' }}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ color: '#6b7280', padding: '6px 0', width: '100px' }}>Student ID</td>
-                                    <td style={{ color: '#6b7280', width: '20px' }}>:</td>
-                                    <td style={{ fontWeight: '700', padding: '6px 0' }}>{attendance.studentId}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ color: '#6b7280', padding: '6px 0' }}>Group</td>
-                                    <td style={{ color: '#6b7280' }}>:</td>
-                                    <td style={{ fontWeight: '700', padding: '6px 0' }}>{group}</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ color: '#6b7280', padding: '6px 0' }}>Campus</td>
-                                    <td style={{ color: '#6b7280' }}>:</td>
-                                    <td style={{ fontWeight: '700', padding: '6px 0' }}>{campus}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* 6. STATUS */}
-                <div style={{ marginBottom: '100px' }}>
-                    <p style={{ fontSize: '12px', fontWeight: '800', margin: '0 0 4px 0' }}>
-                        Status: <span style={{ color: normalizedConsolidated >= 75 ? '#059669' : '#dc2626' }}>{normalizedConsolidated >= 75 ? 'GOOD STANDING' : 'LOW ATTENDANCE'}</span>
-                    </p>
-                    <p style={{ fontSize: '10px', color: '#6b7280' }}>Minimum required attendance is 75%</p>
-                </div>
-
-                {/* 7. FOOTER */}
-                <div style={{ marginTop: 'auto' }}>
-                    <div style={{ height: '1px', backgroundColor: '#e5e7eb', width: '100%', marginBottom: '15px' }}></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
-                        <span>RGUKT Connect – Official Student Record</span>
-                        <span>support@rguktconnect.com</span>
-                        <span>Page 1 of 1</span>
-                    </div>
-                    <p style={{ fontSize: '9px', color: '#9ca3af', textAlign: 'center', marginTop: '15px' }}>This is a system-generated document and does not require a physical signature.</p>
                 </div>
             </div>
         </div>

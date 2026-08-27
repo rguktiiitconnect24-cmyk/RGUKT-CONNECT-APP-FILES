@@ -93,6 +93,20 @@ const pucConfig = {
 const pucApp = getApps().find(a => a.name === "puc") || initializeApp(pucConfig, "puc");
 const pucDb = getFirestore(pucApp);
 
+// Attendance App (Dedicated Project)
+const attendanceConfig = {
+  apiKey: "AIzaSyAKAyR8xocypaxtjgrBjvkktzRYz92kIa0",
+  authDomain: "rc-attendance-report.firebaseapp.com",
+  projectId: "rc-attendance-report",
+  storageBucket: "rc-attendance-report.firebasestorage.app",
+  messagingSenderId: "1018926806355",
+  appId: "1:1018926806355:web:43395901a6808f448d1da6",
+  measurementId: "G-S07LVX92XN"
+};
+
+const attendanceApp = getApps().find(a => a.name === "attendance") || initializeApp(attendanceConfig, "attendance");
+const attendanceDb = getFirestore(attendanceApp);
+
 // Initialize Firestore safely for HMR
 let db;
 try {
@@ -119,5 +133,6 @@ export {
     contentDb, contentStorage,
     bulkUploadDb,
     booksDb,
-    pucDb
+    pucDb,
+    attendanceDb
 };
