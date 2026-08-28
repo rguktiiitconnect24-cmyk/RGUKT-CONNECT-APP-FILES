@@ -48,7 +48,7 @@ const Layout = () => {
         }
     };
 
-    const isNative = Capacitor.isNativePlatform() || true; // FORCED TRUE FOR TESTING
+    const isNative = Capacitor.isNativePlatform();
 
     return (
         <div className={`app-layout ${!showNav ? 'no-sidebar' : isCollapsed ? 'sidebar-collapsed' : ''} overflow-x-hidden min-h-screen`}>
